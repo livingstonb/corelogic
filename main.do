@@ -1,6 +1,7 @@
 clear
 
-global project "~/charlie-project"
+global project "~/charlie-project/corelogic"
+global codedir "${project}/code"
 global tempdir "${project}/temp"
 global outdir "${project}/output"
 
@@ -11,4 +12,4 @@ cap mkdir $outdir
 * load packages
 set odbcmgr unixodbc
 
-do construct_apn_links.do
+do ${codedir}/corelogic_deed_query.do

@@ -5,12 +5,12 @@ set odbcmgr unixodbc
 cap mkdir ${tempdir}/apn_links
 
 * Construct unique keys, accounting for changes in APN across quarters
-delimit ;
+#delimit ;
 
 local first 1;
-forvalues yy = 2020/2021 {
+forvalues yy = 2020/2021 {;
 	clear;
-	forvalues qq = 1/4 {
+	forvalues qq = 1/4 {;
 		odbc load,
 			dsn("SimbaAthena")
 			exec(`"
@@ -19,20 +19,19 @@ forvalues yy = 2020/2021 {
 					t."apn unformatted",
 					t."apn sequence number",
 					t."previous parcel number",
-					t."previous parcel sequence number",
 					t."original apn"
 				FROM
-					corelogic.tax_`yy'q`qq' as t
+					corelogic.tax_`yy'_q`qq' as t
 				WHERE
 					t."fips code" in ('17031') AND
 					t."previous parcel number" IS NOT NULL
 				AND
 					t."property indicator code" in (
 						'10')
-			);
+			"');
 		rename fips_code fips;
 		rename (apn_unformatted apn_sequence_number) (apn_curr seq_curr);
-		rename (previous_parcel_number previous_parcel_sequence_number) (apn seq);
+		rename previous_parcel_number apn;
 		rename original_apn apn0;
 		
 		replace apn = apn_curr if ismissing(apn);
@@ -62,6 +61,6 @@ forvalues yy = 2020/2021 {
 		sort fips apn seq;
 		order fips apn seq cid;
 		save ${tempdir}/apn_links/links/`yy'Q`qq', replace;
-		di "APN Links file `yy'Q`qq' saved."
+		di "APN Links file `yy'Q`qq' saved.";
 	};
 };
