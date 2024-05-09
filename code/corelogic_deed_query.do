@@ -5,13 +5,7 @@ set odbcmgr unixodbc
 set trace on
 set tracedepth 1
 
-// 
-* Construct unique keys, accounting for changes in APN across quarters
 #delimit ;
-
-/* Tempfile to help link records across quarters */
-/* tempfile previous_record; */
-/* dsn("SimbaAthena") */
 
 local first 1;
 forvalues yy = 2020/2020 {;
@@ -44,9 +38,9 @@ forvalues yy = 2020/2020 {;
 					AND (cast(t."APN SEQUENCE NUMBER" as bigint)=d."APN SEQUENCE NUMBER")
 				WHERE
 					(d."fips code" in ('17031'))
-					AND (t."sale date" BETWEEN `yy'`mmdd1' AND `yy'`mmdd1')
+					AND (d."sale date" BETWEEN `yy'`mmdd1' AND `yy'`mmdd2')
 				AND
-					t."property indicator code" in (
+					d."property indicator code" in (
 						'10')
 				ORDER BY
 					d."recording date",
@@ -57,9 +51,8 @@ forvalues yy = 2020/2020 {;
 		rename fips_code fips;
 		rename (apn_unformatted apn_sequence_number) (apn seq);
 		gen dateyq = quarterly("`yy'Q`qq'","YQ");
+		format %tq dateyq
 
-
-		/* save `previous_record', replace; */
 		save "${tempdir}/transactions`yy'Q`qq'", replace;
 	};
 };

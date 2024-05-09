@@ -3,3 +3,5 @@
 /aws_instructions
 template.do
 **.DS_Store
+/output
+/temp
