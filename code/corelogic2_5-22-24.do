@@ -8,7 +8,7 @@ set tracedepth 1
 #delimit ;
 
 local first 1;
-forvalues yy = 2020/2020 {;
+forvalues yy = 2023/2023 {;
 	clear;
 	forvalues qq = 1/1 {;
 		if (`qq' == 1) {; local mmdd1 0101; local mmdd2 0331; };
@@ -27,27 +27,22 @@ forvalues yy = 2020/2020 {;
 					d."archive_date",
 					d."sale amount",
 					d."new construction indicator",
-					d."sale derived recording date",
-					d."sale derived date",
-					d."property indicator code - static",
-					d."actual year built - static",
-					d."effective year built - static",
-					d."deed situs zip code - static",
-					d."transaction fips code",
 					d."owner transfer composite transaction id",
-					d."source_file"
+					t."sale recording date",
+					t."sale date",
+					t."situs zip code",
+					t."effective year built",
+					t."year built",
+					t."universal building square feet",
+					t."building square feet"
 				FROM corelogic2.ownertransfer as d
-				WHERE
-					(d."fips code" in ('17031'))
-					AND (d."pri cat code" IN ('A'))
-					AND (d."sale derived date" BETWEEN `yy'`mmdd1' AND `yy'`mmdd2')
-					AND
-					d."property indicator code - static" in (
-						'10')
-				ORDER BY
-					d."recording date",
-					d."fips code",
-					d."clip"
+				LEFT JOIN corelogic2.property_basic as t
+					ON (t."clip"=d."clip") AND (t."transaction batch date"=d."transaction batch date")
+						AND (t."transaction batch sequence number"=d."transaction batch sequence number")
+				WHERE (d."fips code" in ('17031'))
+					AND (d."primary category code" IN ('A'))
+					AND (cast(d."sale derived date" as bigint) between `yy'`mmdd1' and `yy'`mmdd2')
+					AND t."property indicator code" in ('10')
 			"');
 		rename fips_code fips;
 		rename (apn_unformatted apn_sequence_number) (apn seq);

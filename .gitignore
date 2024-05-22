@@ -5,3 +5,5 @@ template.do
 **.DS_Store
 /output
 /temp
+*.csv
+*.dta
