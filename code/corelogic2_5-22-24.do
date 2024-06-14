@@ -15,10 +15,10 @@ forvalues yy = 2023/2023 {;
 		else if (`qq' == 2) 	{; local mmdd1 0401; local mmdd2 0630;};
 		else if (`qq' == 3) 	{; local mmdd1 0701; local mmdd2 0930;};
 		else 					{; local mmdd1 1001; local mmdd2 1231;};
-		
+		;
 		odbc load,
-				dsn("SimbaAthena")
-				exec(`"
+				connectionstring("DRIVER={/opt/athena/odbc/arm64/lib/libathena-odbc-arm64.dylib};")
+				exec("
 				SELECT
 					d."fips code",
 					d."clip",
@@ -41,13 +41,12 @@ forvalues yy = 2023/2023 {;
 						AND (t."transaction batch sequence number"=d."transaction batch sequence number")
 				WHERE (d."fips code" in ('17031'))
 					AND (d."primary category code" IN ('A'))
-					AND (cast(d."sale derived date" as bigint) between `yy'`mmdd1' and `yy'`mmdd2')
-					AND t."property indicator code" in ('10')
-			"');
+					AND (t."sale date" between "'"`yy'`mmdd1'"'" and "'"`yy'`mmdd2'"'")
+					AND (t."property indicator code" in ('10'))
+			");
 		rename fips_code fips;
-		rename (apn_unformatted apn_sequence_number) (apn seq);
 		gen dateyq = quarterly("`yy'Q`qq'","YQ");
-		format %tq dateyq
+		format %tq dateyq;
 
 		save "${tempdir}/transactions`yy'Q`qq'", replace;
 	};

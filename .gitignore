@@ -7,3 +7,4 @@ template.do
 /temp
 *.csv
 *.dta
+/corelogic_queries
