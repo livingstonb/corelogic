@@ -14,7 +14,7 @@ forvalues yy = `year1'/`year2' {;
 		
 		if (`qq' == 1) {; local mmdd1 0101; local mmdd2 0331; };
 		else if (`qq' == 2) 	{; local mmdd1 0401; local mmdd2 0630;};
-		else if (`qq' == 3) 	{; local mmdd1 0701; local mmdd2 930;};
+		else if (`qq' == 3) 	{; local mmdd1 0701; local mmdd2 0930;};
 		else 					{; local mmdd1 1001; local mmdd2 1231;};
 		
 		if (`yy' == `year1') & (`qq' < `quarter1') {;
@@ -25,7 +25,7 @@ forvalues yy = `year1'/`year2' {;
 			continue, break;
 		};
 		
-		if (`yy'q`qq' == "2018q4") {;
+		if ("`yy'q`qq'" == "2018q4") {;
 			local _s_ "_";
 		};
 		else {;
@@ -45,7 +45,7 @@ forvalues yy = `year1'/`year2' {;
 					d."batch id",
 					d."batch seq",
 					t."year`_s_'built",
-					t."land`_s_'square`sep'footage",
+					t."land`_s_'square`_s_'footage",
 					t."universal`_s_'building`_s_'square`_s_'feet",
 					t."property`_s_'zipcode"
 				FROM
@@ -53,7 +53,7 @@ forvalues yy = `year1'/`year2' {;
 				INNER JOIN corelogic.tax_`yy'_q`qq' as t
 				ON (t."FIPS`_s_'CODE"=d."FIPS CODE")
 					AND (t."APN`_s_'UNFORMATTED"=d."APN UNFORMATTED")
-					AND (cast(t."APN`_s_'SEQUENCE`_s_'NUMBER" as bigint)=d."APN SEQUENCENUMBER")
+					AND (cast(t."APN`_s_'SEQUENCE`_s_'NUMBER" as bigint)=d."APN SEQUENCE NUMBER")
 				WHERE
 					(d."fips code" in ('32003'))
 					AND (d."pri cat code" IN ('A'))

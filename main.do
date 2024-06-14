@@ -14,4 +14,4 @@ cap mkdir "$outdir"
 * load packages
 set odbcmgr unixodbc
 
-do "${codedir}/corelogic2_5-22-24.do"
+do "${codedir}/corelogic_legacy_query.do"
