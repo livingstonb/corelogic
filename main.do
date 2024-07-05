@@ -15,3 +15,7 @@ cap mkdir "$outdir"
 set odbcmgr unixodbc
 
 do "${codedir}/corelogic_legacy_query.do"
+do "${codedir}/merge_quarters.do"
+do "${codedir}/corelogic_legacy_new_construction.do"
+
+// use "${tempdir}/corelogic_legacy_merged.dta", clear

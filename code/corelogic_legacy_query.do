@@ -2,6 +2,10 @@
 * Load packages
 set odbcmgr unixodbc
 
+* Load string of apn sequence numbers (properties)?
+* Search older quarters and retain just identifiers, dates, and resale indicator
+* Merge with apn seq numbers in most recent dataset? Or append firste
+
 #delimit ;
 
 local year1 2015;
