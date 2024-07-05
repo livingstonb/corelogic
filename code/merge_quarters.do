@@ -24,4 +24,4 @@ forvalues yy = `year1'/`year2' {;
 	};
 };
 
-save "${tempdir}/corelogic_legacy_merged.dta", replace
+save "${tempdir}/corelogic_legacy_merged.dta", replace;
