@@ -31,13 +31,18 @@ cap odbc load,
 	
 rename fips_code fips;
 rename (apn_unformatted apn_sequence_number) (apn seq);
-gen ddate = date(recording_date, "YMD");
-format %td ddate;
+gen ddate0 = date(recording_date, "YMD");
+format %td ddate0;
 
-gen qdate = qofd(ddate);
-format %tq qdate;
+gen qdate0 = qofd(ddate0);
+format %tq qdate0;
 
-gen year = year(ddate);
-gen month = month(ddate);
+gen year0 = year(ddate0);
+gen month0 = month(ddate0);
+
+destring fips apn, replace;
+
+bysort fips apn seq (ddate0): keep if (_n == 1);
+keep fips apn seq *date0 year0 month0;
 
 save "${tempdir}/newconstruction.dta", replace;

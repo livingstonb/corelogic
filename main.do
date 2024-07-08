@@ -18,4 +18,6 @@ do "${codedir}/corelogic_legacy_query.do"
 do "${codedir}/merge_quarters.do"
 do "${codedir}/corelogic_legacy_new_construction.do"
 
-// use "${tempdir}/corelogic_legacy_merged.dta", clear
+use "${tempdir}/corelogic_legacy_merged.dta", clear
+merge m:1 fips apn seq using "${tempdir}/newconstruction.dta", keep(1 3) nogen
+save "${outdir}/final_output.dta", replace

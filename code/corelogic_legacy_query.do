@@ -51,7 +51,19 @@ forvalues yy = `year1'/`year2' {;
 					t."year`_s_'built",
 					t."land`_s_'square`_s_'footage",
 					t."universal`_s_'building`_s_'square`_s_'feet",
-					t."property`_s_'zipcode"
+					t."property`_s_'zipcode",
+					t."bedrooms",
+					t."total`_s_'baths",
+					t."total`_s_'baths`_s_'calculated",
+					t."construction`_s_'type`_s_'code",
+					t."exterior`_s_'walls`_s_'code",
+					t."fireplace`_s_'number",
+					t."parking`_s_'spaces",
+					t."pool`_s_'flag",
+					t."quality`_s_'code",
+					t."stories`_s_'number",
+					t."units`_s_'number",
+					t."view"
 				FROM
 					corelogic.deed as d
 				INNER JOIN corelogic.tax_`yy'_q`qq' as t

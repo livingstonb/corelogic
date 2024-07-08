@@ -24,4 +24,16 @@ forvalues yy = `year1'/`year2' {;
 	};
 };
 
+#delimit ;
+replace property_zipcode = substr(property_zipcode, 1, 5);
+
+destring fips apn sale_amount batch* year_built
+	land_square_footage universal_building_square_feet
+	property_zipcode, force replace;
+	
+foreach var of varlist sale_amount year_built land_square_footage
+	universal_building_square_feet property_zipcode {;
+	replace `var' = . if (`var' == 0);
+};
+
 save "${tempdir}/corelogic_legacy_merged.dta", replace;

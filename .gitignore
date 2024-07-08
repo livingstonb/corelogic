@@ -6,5 +6,6 @@ template.do
 /output
 /temp
 *.csv
+*.log
 *.dta
 /corelogic_queries
