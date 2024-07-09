@@ -19,5 +19,18 @@ do "${codedir}/merge_quarters.do"
 do "${codedir}/corelogic_legacy_new_construction.do"
 
 use "${tempdir}/corelogic_legacy_merged.dta", clear
-merge m:1 fips apn seq using "${tempdir}/newconstruction.dta", keep(1 3) nogen
-save "${outdir}/final_output.dta", replace
+// merge m:1 fips apn seq using "${tempdir}/newconstruction.dta", keep(1 3) nogen
+
+append using "${tempdir}/newconstruction.dta", gen(historical) force
+
+#delimit ;
+destring fips apn sale_amount batch* year_built
+	land_square_footage universal_building_square_feet
+	property_zipcode, force replace;
+	
+foreach var of varlist sale_amount year_built land_square_footage
+	universal_building_square_feet property_zipcode {;
+	replace `var' = . if (`var' == 0);
+};
+
+save "${outdir}/final_output.dta", replace;

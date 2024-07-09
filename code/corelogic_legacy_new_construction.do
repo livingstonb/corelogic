@@ -14,6 +14,8 @@ cap odbc load,
 			d."recording date",
 			d."sale date",
 			d."resale new construction code"
+			d."batch id",
+			d."batch seq"
 		FROM
 			corelogic.deed as d
 		WHERE
@@ -21,7 +23,7 @@ cap odbc load,
 			AND (d."pri cat code" IN ('A'))
 			AND (d."mortgage sequence number" is NULL)
 			AND (d."property indicator code" in ('10'))
-			AND (d."resale new construction code" in ('N'))
+			AND (d."sale date" <= 20150401)
 		ORDER BY
 			d."sale date",
 			d."fips code",
@@ -41,8 +43,7 @@ gen year0 = year(ddate0);
 gen month0 = month(ddate0);
 
 destring fips apn, replace;
-
-bysort fips apn seq (ddate0): keep if (_n == 1);
-keep fips apn seq *date0 year0 month0;
+ 
+keep fips apn seq recording_date sale_date resale_new_construction_code batch*;
 
 save "${tempdir}/newconstruction.dta", replace;
