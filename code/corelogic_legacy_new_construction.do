@@ -13,6 +13,7 @@ cap odbc load,
 			d."apn sequence number",
 			d."recording date",
 			d."sale date",
+			d."sale amount",
 			d."resale new construction code",
 			d."batch id",
 			d."batch seq"
@@ -38,11 +39,15 @@ format %td ddate0;
 
 gen qdate0 = qofd(ddate0);
 format %tq qdate0;
+gen dateyq = qdate0;
+format %tq dateyq;
 
-gen year0 = year(ddate0);
-gen month0 = month(ddate0);
+gen year = year(ddate0);
+gen month = month(ddate0);
+gen quarter = quarter(ddate0);
 
  
-keep fips apn seq recording_date sale_date resale_new_construction_code batch*;
+keep fips apn seq recording_date sale_date resale_new_construction_code batch*
+	year quarter dateyq sale_amount;
 
 save "${tempdir}/newconstruction.dta", replace;
