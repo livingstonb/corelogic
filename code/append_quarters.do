@@ -27,4 +27,4 @@ forvalues yy = `year1'/`year2' {;
 #delimit ;
 replace property_zipcode = substr(property_zipcode, 1, 5);
 
-save "${tempdir}/corelogic_legacy_merged.dta", replace;
+save "${tempdir}/corelogic_combined.dta", replace;

@@ -24,9 +24,8 @@ cap odbc load,
 			AND (d."pri cat code" IN ('A'))
 			AND (d."mortgage sequence number" is NULL)
 			AND (d."property indicator code" in ('10'))
-			AND (d."recording date" <= 20150401)
 		ORDER BY
-			d."sale date",
+			d."recording date",
 			d."fips code",
 			d."apn unformatted",
 			d."apn sequence number"
@@ -34,20 +33,18 @@ cap odbc load,
 	
 rename fips_code fips;
 rename (apn_unformatted apn_sequence_number) (apn seq);
-gen ddate0 = date(recording_date, "YMD");
-format %td ddate0;
+gen date_new_con = date(recording_date, "YMD");
+format %td date_new_con;
 
-gen qdate0 = qofd(ddate0);
-format %tq qdate0;
-gen dateyq = qdate0;
-format %tq dateyq;
+bysort fips apn seq (date_new_con):
+	keep if (_n == 1) & (resale_new_construction_code == "N");
 
-gen year = year(ddate0);
-gen month = month(ddate0);
-gen quarter = quarter(ddate0);
-
+gen year_new_con = year(date_new_con);
+gen month_new_con = month(date_new_con);
+gen quarter_new_con = quarter(date_new_con);
  
-keep fips apn seq recording_date sale_date resale_new_construction_code batch*
-	year quarter dateyq sale_amount;
+keep fips apn seq *_new_con;
 
-save "${tempdir}/newconstruction.dta", replace;
+save "${tempdir}/deed_dup.dta", replace;
+duplicates drop fips apn seq, force;
+save "${tempdir}/deed.dta", replace;
