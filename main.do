@@ -47,6 +47,6 @@ foreach var of varlist sale_amount year_built land_square_footage
 * number of days between sale as new construction and given row
 gen ddate = date(recording_date, "YMD")
 format %td ddate
-gen dsince_new_con = recording_date - date_new_con
+gen dsince_new_con = ddate - date_new_con
 
 save "${outdir}/merged.dta", replace

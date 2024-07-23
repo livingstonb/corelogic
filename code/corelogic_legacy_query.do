@@ -72,7 +72,7 @@ forvalues yy = `year1'/`year2' {;
 					AND (t."APN`_s_'UNFORMATTED"=d."APN UNFORMATTED")
 					AND (cast(t."APN`_s_'SEQUENCE`_s_'NUMBER" as bigint)=d."APN SEQUENCE NUMBER")
 				WHERE
-					AND (d."pri cat code" IN ('A'))
+					 (d."pri cat code" IN ('A'))
 					AND (d."sale date" BETWEEN `yy'`mmdd1' AND `yy'`mmdd2')
 					AND (d."mortgage sequence number" is NULL)
 					AND (d."property indicator code" in ('10'))
