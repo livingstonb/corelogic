@@ -45,6 +45,4 @@ gen quarter_new_con = quarter(date_new_con);
  
 keep fips apn seq *_new_con;
 
-save "${tempdir}/deed_dup.dta", replace;
-duplicates drop fips apn seq, force;
 save "${tempdir}/deed.dta", replace;

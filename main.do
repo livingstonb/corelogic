@@ -42,8 +42,11 @@ foreach var of varlist sale_amount year_built land_square_footage
 	universal_building_square_feet property_zipcode {;
 	replace `var' = . if (`var' == 0);
 };
+#delimit cr
 
 * number of days between sale as new construction and given row
+gen ddate = date(recording_date, "YMD")
+format %td ddate
 gen dsince_new_con = recording_date - date_new_con
 
-save "${outdir}/merged.dta", replace;
+save "${outdir}/merged.dta", replace
