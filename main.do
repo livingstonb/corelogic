@@ -49,4 +49,5 @@ gen ddate = date(recording_date, "YMD")
 format %td ddate
 gen dsince_new_con = ddate - date_new_con
 
+compress
 save "${outdir}/merged.dta", replace

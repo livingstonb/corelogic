@@ -20,8 +20,7 @@ cap odbc load,
 		FROM
 			corelogic.deed as d
 		WHERE
-			(d."fips code" in ('32003'))
-			AND (d."pri cat code" IN ('A'))
+			(d."pri cat code" IN ('A'))
 			AND (d."mortgage sequence number" is NULL)
 			AND (d."property indicator code" in ('10'))
 		ORDER BY
