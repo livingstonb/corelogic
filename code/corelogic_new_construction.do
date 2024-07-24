@@ -44,4 +44,5 @@ gen quarter_new_con = quarter(date_new_con);
  
 keep fips apn seq *_new_con;
 
+compress;
 save "${tempdir}/deed.dta", replace;
