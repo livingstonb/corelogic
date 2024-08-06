@@ -75,7 +75,7 @@ forvalues yy = `year1'/`year2' {;
 					 (d."pri cat code" IN ('A'))
 					AND (d."sale date" BETWEEN `yy'`mmdd1' AND `yy'`mmdd2')
 					AND (d."mortgage sequence number" is NULL)
-					AND (d."property indicator code" in ('11'))
+					AND (d."property indicator code" in ('10'))
 				ORDER BY
 					d."sale date",
 					d."fips code",
