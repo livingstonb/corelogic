@@ -1,3 +1,8 @@
+args include_sales_before_2015
+
+if "`include_sales_before_2015'" == "" {
+	local include_sales_before_2015 0
+}
 
 clear
 #delimit ;
@@ -22,6 +27,10 @@ forvalues yy = `year1'/`year2' {;
 		replace year = `yy' if missing(year);
 		replace quarter = `qq' if missing(quarter);
 	};
+};
+
+if include_sales_before_2015 {;
+	append using "${tempdir}/transactions_before_2015q2.dta";
 };
 
 #delimit ;

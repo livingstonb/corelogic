@@ -1,10 +1,11 @@
+args include_sales_before_2015
+
+if "`include_sales_before_2015'" == "" {
+	local include_sales_before_2015 0
+}
 
 * Load packages
 set odbcmgr unixodbc
-
-* Load string of apn sequence numbers (properties)?
-* Search older quarters and retain just identifiers, dates, and resale indicator
-* Merge with apn seq numbers in most recent dataset? Or append firste
 
 #delimit ;
 
@@ -89,4 +90,58 @@ forvalues yy = `year1'/`year2' {;
 
 		save "${tempdir}/transactions`yy'Q`qq'", replace;
 	};
+};
+
+if include_sales_before_2015 {;
+	clear;
+	local _s_ " ";
+	cap odbc load,
+				dsn("SimbaAthena")
+				exec(`"
+				SELECT
+					d."fips code",
+					d."apn unformatted",
+					d."apn sequence number",
+					d."recording date",
+					d."sale date",
+					d."sale amount",
+					d."resale new construction code",
+					d."batch id",
+					d."batch seq",
+					t."year`_s_'built",
+					t."land`_s_'square`_s_'footage",
+					t."universal`_s_'building`_s_'square`_s_'feet",
+					t."property`_s_'zipcode",
+					t."bedrooms",
+					t."total`_s_'baths",
+					t."total`_s_'baths`_s_'calculated",
+					t."construction`_s_'type`_s_'code",
+					t."exterior`_s_'walls`_s_'code",
+					t."fireplace`_s_'number",
+					t."parking`_s_'spaces",
+					t."pool`_s_'flag",
+					t."quality`_s_'code",
+					t."stories`_s_'number",
+					t."units`_s_'number",
+					t."view"
+				FROM
+					corelogic.deed as d
+				INNER JOIN corelogic.tax_2015_q2 as t
+				ON (t."FIPS`_s_'CODE"=d."FIPS CODE")
+					AND (t."APN`_s_'UNFORMATTED"=d."APN UNFORMATTED")
+					AND (cast(t."APN`_s_'SEQUENCE`_s_'NUMBER" as bigint)=d."APN SEQUENCE NUMBER")
+				WHERE
+					 (d."pri cat code" IN ('A'))
+					AND (d."sale date" < 20150401)
+					AND (d."mortgage sequence number" is NULL)
+					AND (d."property indicator code" in ('10'))
+				ORDER BY
+					d."sale date",
+					d."fips code",
+					d."apn unformatted",
+					d."apn sequence number"
+			"');
+	rename fips_code fips;
+	rename (apn_unformatted apn_sequence_number) (apn seq);
+	save "${tempdir}/transactions_before_2015q2", replace;
 };

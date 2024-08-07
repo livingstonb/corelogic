@@ -14,11 +14,14 @@ cap mkdir "$outdir"
 * load packages
 set odbcmgr unixodbc
 
-* main query, deed table merged with tax tables from 2015 on, by quarter
-do "${codedir}/corelogic_legacy_query.do"
+* set option for whether to include sales prior to 2015
+local include_sales_before_2015 1
+
+* main query, deed table merged with tax tables by quarter
+do "${codedir}/corelogic_legacy_query.do" include_sales_before_2015
 
 * append quarters
-do "${codedir}/append_quarters.do"
+do "${codedir}/append_quarters.do" include_sales_before_2015
 
 * query older transactions data
 do "${codedir}/corelogic_new_construction.do"
@@ -49,5 +52,12 @@ gen ddate = date(recording_date, "YMD")
 format %td ddate
 gen dsince_new_con = ddate - date_new_con
 
+* conserve space
+drop if missing(dsince_new_con)
+
+* drop if above is negative (should only matter if include_sales_before_2015 = 1)
+drop if dsince_new_con < 0
+
 compress
-save "${outdir}/merged.dta", replace
+local datestr "`=subinstr("_$S_DATE"," ","_",.)'"
+save "${outdir}/merged`datestr'.dta", replace
