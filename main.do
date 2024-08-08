@@ -18,10 +18,10 @@ set odbcmgr unixodbc
 local include_sales_before_2015 1
 
 * main query, deed table merged with tax tables by quarter
-do "${codedir}/corelogic_legacy_query.do" include_sales_before_2015
+do "${codedir}/corelogic_legacy_query.do" `include_sales_before_2015'
 
 * append quarters
-do "${codedir}/append_quarters.do" include_sales_before_2015
+do "${codedir}/append_quarters.do" `include_sales_before_2015'
 
 * query older transactions data
 do "${codedir}/corelogic_new_construction.do"
@@ -33,8 +33,6 @@ use "${tempdir}/corelogic_combined.dta", clear
 merge m:1 fips apn seq using "${tempdir}/deed.dta",
 	nogen keep(1 3) force;
 #delim cr
-// merge m:1 fips apn seq using "${tempdir}/newconstruction.dta", keep(1 3) nogen
-
 
 #delimit ;
 destring fips apn sale_amount batch* year_built

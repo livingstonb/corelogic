@@ -29,7 +29,7 @@ forvalues yy = `year1'/`year2' {;
 	};
 };
 
-if include_sales_before_2015 {;
+if `include_sales_before_2015' {;
 	append using "${tempdir}/transactions_before_2015q2.dta";
 };
 
