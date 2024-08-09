@@ -32,7 +32,7 @@ cap odbc load,
 	
 rename fips_code fips;
 rename (apn_unformatted apn_sequence_number) (apn seq);
-gen date_new_con = date(recording_date, "YMD");
+gen date_new_con = date(${datevar}_date, "YMD");
 format %td date_new_con;
 
 bysort fips apn seq (date_new_con):

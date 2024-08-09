@@ -14,14 +14,17 @@ cap mkdir "$outdir"
 * load packages
 set odbcmgr unixodbc
 
-* set option for whether to include sales prior to 2015
-local include_sales_before_2015 1
+* config
+local tfirst 19930101
+local tlast 20220630
+local selected_query "query_within_house.doh"
+global datevar recording
 
 * main query, deed table merged with tax tables by quarter
-do "${codedir}/corelogic_legacy_query.do" `include_sales_before_2015'
+do "${codedir}/corelogic_legacy_query.do" `selected_query' `tfirst' `tlast'
 
 * append quarters
-do "${codedir}/append_quarters.do" `include_sales_before_2015'
+do "${codedir}/append_quarters.do" `tfirst' `tlast'
 
 * query older transactions data
 do "${codedir}/corelogic_new_construction.do"
@@ -46,15 +49,16 @@ foreach var of varlist sale_amount year_built land_square_footage
 #delimit cr
 
 * number of days between sale as new construction and given row
-gen ddate = date(recording_date, "YMD")
+gen ddate = date(${datevar}_date, "YMD")
 format %td ddate
 gen dsince_new_con = ddate - date_new_con
 
-* conserve space
+* to conserve space
 drop if missing(dsince_new_con)
 
-* drop if above is negative (should only matter if include_sales_before_2015 = 1)
+* sample selection
 drop if dsince_new_con < 0
+drop if sale_amount < 0
 
 compress
 local datestr "`=subinstr("_$S_DATE"," ","_",.)'"

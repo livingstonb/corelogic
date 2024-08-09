@@ -1,36 +1,35 @@
-args include_sales_before_2015
+args tfirst
 
-if "`include_sales_before_2015'" == "" {
-	local include_sales_before_2015 0
+if "`tfirst'" == "" {
+	local tfirst 20150401
 }
+
+local year1  = substr("`tfirst'", 1, 4)
+local mmdd1 = substr("`tfirst'", 5, 4)
+
+if (`mmdd1' == 0101) {local q1 1}
+	else if (`mmdd1' == 0401) {local q1 2}
+	else if (`mmdd1' == 0701) {local q1 3}
+	else if (`mmdd1' == 1001) {local q1 4}
+	else  {
+		di "Bad initial date for append_quarters"
+		exit
+	}
 
 clear
 #delimit ;
 
-local year1 2015;
-local year2 2022;
-local quarter1 2;
-local quarter2 3;
-
-forvalues yy = `year1'/`year2' {;
+forvalues yy = 1993/2022 {;
 	forvalues qq = 1/4 {;
-		if (`yy' == `year1') & (`qq' < `quarter1') {;
+		if (`yy'`qq' < `year1'`q1') {;
 			continue;
 		};
-		if (`yy' == `year2') & (`qq' > `quarter2') {;
+		else if (`yy'`qq' > 20223)  {;
 			continue, break;
 		};
 		
 		append using "${tempdir}/transactions`yy'Q`qq'.dta";
-		cap gen year =  `yy';
-		cap gen quarter = `qq';
-		replace year = `yy' if missing(year);
-		replace quarter = `qq' if missing(quarter);
 	};
-};
-
-if `include_sales_before_2015' {;
-	append using "${tempdir}/transactions_before_2015q2.dta";
 };
 
 #delimit ;
