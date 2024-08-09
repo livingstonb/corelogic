@@ -1,4 +1,4 @@
-args tfirst
+args tfirst tlast
 
 if "`tfirst'" == "" {
 	local tfirst 20150401

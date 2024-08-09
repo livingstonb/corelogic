@@ -32,13 +32,13 @@ do "${codedir}/append_quarters.do" `tfirst' `tlast'
 * query older transactions data
 do "${codedir}/corelogic_new_construction.do"
 
-* merge richer, recent dataset with old transactions
-use "${tempdir}/corelogic_combined.dta", clear
-
-#delim ;
-merge m:1 fips apn seq using "${tempdir}/deed.dta",
-	nogen keep(1 3) force;
-#delim cr
+// * merge richer, recent dataset with old transactions
+// use "${tempdir}/corelogic_combined.dta", clear
+//
+// #delim ;
+// merge m:1 fips apn seq using "${tempdir}/deed.dta",
+// 	nogen keep(1 3) force;
+// #delim cr
 
 #delimit ;
 foreach var of varlist fips apn sale_amount batch* year_built
@@ -53,18 +53,6 @@ foreach var of varlist sale_amount year_built land_square_footage
 	cap replace `var' = . if (`var' == 0);
 };
 #delimit cr
-
-* number of days between sale as new construction and given row
-gen ddate = date(${datevar}_date, "YMD")
-format %td ddate
-gen dsince_new_con = ddate - date_new_con
-
-* to conserve space
-drop if missing(dsince_new_con)
-
-* sample selection
-drop if dsince_new_con < 0
-drop if sale_amount < 0
 
 compress
 local datestr "`=subinstr("_$S_DATE"," ","_",.)'"
