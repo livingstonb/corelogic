@@ -19,7 +19,7 @@ forvalues yy = 1993/2022 {;
 			continue;
 		};
 		/* After sample, break out of loop */
-		if (`yy'`mmd2' > `tlast') {;
+		if (`yy'`mmdd1' > `tlast') {;
 			continue, break;
 		};
 		

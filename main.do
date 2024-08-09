@@ -1,8 +1,8 @@
 clear
 
-global project "/Users/brianlivingston/Dropbox/NU/Spring 2024/RA/corelogic"
+// global project "/Users/brianlivingston/Dropbox/NU/Spring 2024/RA/corelogic"
 
-// global project "~/charlie-project/corelogic"
+global project "~/charlie-project/corelogic"
 global codedir "${project}/code"
 global tempdir "${project}/temp"
 global outdir "${project}/output"
@@ -20,6 +20,9 @@ local tfirst 19930101
 local tlast 20220630
 local selected_query query_within_house.doh
 global datevar recording
+global restrict_fips `"AND (d."fips_code" in ('32003'))"'
+set trace on
+set tracedepth 3
 
 * main query, deed table merged with tax tables by quarter
 do "${codedir}/corelogic_legacy_query.do" `selected_query' `tfirst' `tlast'
