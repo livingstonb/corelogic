@@ -79,8 +79,6 @@ drop if dsince_new_con < 0;
 gen year_new_con = year(date_new_con);
 gen month_new_con = month(date_new_con);
 gen quarter_new_con = quarter(date_new_con);
- 
-keep fips apn seq *_new_con;
 
 compress;
 save "${tempdir}/deed.dta", replace;

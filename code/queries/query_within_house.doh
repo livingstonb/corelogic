@@ -23,7 +23,7 @@ cap odbc load,
 			AND (d."mortgage sequence number" is NULL)
 			AND (d."property indicator code" in ('10'))
 			AND (d."sale amount" > 0)
-			AND (d."fips_code" in ('32003'))
+			AND (d."fips code" in ('32003'))
 		ORDER BY
 			d."sale date",
 			d."fips code",
