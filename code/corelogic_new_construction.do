@@ -56,7 +56,8 @@ drop first_sale_is_new_con;
 
 /* Drop properties with subsequent sales listed as new construction */
 bysort fips apn seq (ddate):
-	later_new_construction_sale = (_n > 1) & (resale_new_construction_code == "N");
+	gen later_new_construction_sale
+		= (_n > 1) & (resale_new_construction_code == "N");
 bysort fips apn seq:
 	egen has_later_new_con_sale = max(later_new_construction_sale);
 drop if has_later_new_con_sale;
