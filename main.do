@@ -1,11 +1,12 @@
 clear
 
-// global project "/Users/brianlivingston/Dropbox/NU/Spring 2024/RA/corelogic"
+global project "/Users/brianlivingston/Dropbox/NU/Spring 2024/RA/corelogic"
 
-global project "~/charlie-project/corelogic"
+// global project "~/charlie-project/corelogic"
 global codedir "${project}/code"
 global tempdir "${project}/temp"
 global outdir "${project}/output"
+global datadir "${project}/data"
 
 cd "$project"
 cap mkdir "$tempdir"
@@ -17,7 +18,7 @@ set odbcmgr unixodbc
 * config
 local tfirst 19930101
 local tlast 20220630
-local selected_query "query_within_house.doh"
+local selected_query query_within_house.doh
 global datevar recording
 
 * main query, deed table merged with tax tables by quarter

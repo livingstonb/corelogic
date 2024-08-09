@@ -1,4 +1,5 @@
 **.docx
+*.xlsx
 /archived
 /aws_instructions
 template.do

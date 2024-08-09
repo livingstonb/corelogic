@@ -21,6 +21,7 @@ forvalues yy = 1993/2022 {;
 		/* After sample, break out of loop */
 		if (`yy'`mmd2' > `tlast') {;
 			continue, break;
+		};
 		
 		/* Odd naming convention in 2018q4 tax tables */
 		if ("`yy'q`qq'" == "2018q4") {;

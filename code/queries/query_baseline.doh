@@ -1,6 +1,8 @@
 
 
 
+#delimit ;
+
 /* Create local for tax table name */
 if  (`yy'`mmdd1' < 20150401) {;
 	/* Fix property characteristics for all pre-2015q2 transactions */
@@ -52,6 +54,7 @@ cap odbc load,
 			AND (d."${datevar} date" BETWEEN `yy'`mmdd1' AND `yy'`mmdd2')
 			AND (d."mortgage sequence number" is NULL)
 			AND (d."property indicator code" in ('10'))
+			AND (d."sale amount" > 0)
 		ORDER BY
 			d."sale date",
 			d."fips code",
