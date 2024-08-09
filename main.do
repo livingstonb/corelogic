@@ -20,7 +20,6 @@ local tfirst 19930101
 local tlast 20220630
 local selected_query query_within_house.doh
 global datevar recording
-global restrict_fips `"AND (d."fips_code" in ('32003'))"'
 set trace on
 set tracedepth 3
 
@@ -42,13 +41,16 @@ merge m:1 fips apn seq using "${tempdir}/deed.dta",
 #delim cr
 
 #delimit ;
-destring fips apn sale_amount batch* year_built
+foreach var of varlist fips apn sale_amount batch* year_built
 	land_square_footage universal_building_square_feet
-	property_zipcode, force replace;
+	property_zipcode {;
+	cap destring `var', force replace;
+};
+cap destring , force replace;
 	
 foreach var of varlist sale_amount year_built land_square_footage
 	universal_building_square_feet property_zipcode {;
-	replace `var' = . if (`var' == 0);
+	cap replace `var' = . if (`var' == 0);
 };
 #delimit cr
 
