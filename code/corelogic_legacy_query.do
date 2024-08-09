@@ -39,12 +39,13 @@ forvalues yy = 1993/2022 {;
 				rename (apn_unformatted apn_sequence_number) (apn seq);
 				gen dateyq = quarterly("`yy'Q`qq'","YQ");
 				format %tq dateyq;
-				gen year = `yy'
-				gen quarter = `qq'
+				
+				gen year = `yy';
+				gen quarter = `qq';
 			};
 		};
 		else {;
-			di "NO OBSERVATIONS FOR `yy'Q`qq'"
+			di "NO OBSERVATIONS FOR `yy'Q`qq'";
 		};
 		save "${tempdir}/transactions`yy'Q`qq'", emptyok replace;
 	};
