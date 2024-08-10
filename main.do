@@ -32,7 +32,7 @@ do "${codedir}/append_quarters.do" `tfirst' `tlast'
 do "${codedir}/corelogic_new_construction.do"
 
 #delimit ;
-local vars fips apn sale_amount batch* year_built
+local vars fips apn sale_amount year_built
 	land_square_footage universal_building_square_feet
 	property_zipcode;
 foreach var of local vars  {;

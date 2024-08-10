@@ -1,45 +1,5 @@
 
-
-/*
-
-clear
-
-* Load packages
-set odbcmgr unixodbc
-
-
-cap odbc load,
-		dsn("SimbaAthena")
-		exec(`"
-		SELECT
-			d."fips code",
-			d."apn unformatted",
-			d."apn sequence number",
-			d."recording date",
-			d."sale date",
-			d."sale amount",
-			d."resale new construction code",
-			d."batch id",
-			d."batch seq"
-		FROM
-			corelogic.deed as d
-		WHERE
-			(d."pri cat code" IN ('A'))
-			AND (d."mortgage sequence number" is NULL)
-			AND (d."property indicator code" in ('10'))
-			AND (d."sale amount" > 0)
-		ORDER BY
-			d."recording date",
-			d."fips code",
-			d."apn unformatted",
-			d."apn sequence number"
-	"')
-*/
-	
 #delimit ;
-
-rename fips_code fips;
-rename (apn_unformatted apn_sequence_number) (apn seq);
 
 gen ddate = date(${datevar}_date, "YMD");
 format %td date;
@@ -67,7 +27,7 @@ drop later_new_construction_sale has_later_new_con_sale;
 bysort fips apn seq (ddate):
 	gen temp_date_new_con = ddate if (_n == 1);
 bysort fips apn seq:
-	egen date_new_con = first(temp_date_new_con);
+	egen date_new_con = max(temp_date_new_con);
 format %td date_new_con;
 drop temp_date_new_con;
 
