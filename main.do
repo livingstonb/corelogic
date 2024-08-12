@@ -32,16 +32,14 @@ do "${codedir}/append_quarters.do" `tfirst' `tlast'
 do "${codedir}/corelogic_new_construction.do"
 
 #delimit ;
-local vars fips apn sale_amount year_built
-	land_square_footage universal_building_square_feet
-	property_zipcode;
+local vars apn sale_amount year_built
+	land_square_footage universal_building_square_feet;
 foreach var of local vars  {;
 	cap destring `var', force replace;
 };
-cap destring , force replace;
 	
 local vars sale_amount year_built land_square_footage
-	universal_building_square_feet property_zipcode;
+	universal_building_square_feet;
 foreach var of local vars {;
 	cap replace `var' = . if (`var' == 0);
 };

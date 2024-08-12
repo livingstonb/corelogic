@@ -40,5 +40,5 @@ gen year_new_con = year(date_new_con);
 gen month_new_con = month(date_new_con);
 gen quarter_new_con = quarter(date_new_con);
 
-compress;
+drop resale_new_construction_code;
 save "${tempdir}/deed.dta", replace;

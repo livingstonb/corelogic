@@ -32,5 +32,4 @@ forvalues yy = 1993/2022 {;
 #delimit ;
 cap replace property_zipcode = substr(property_zipcode, 1, 5);
 
-compress;
 save "${tempdir}/corelogic_combined.dta", replace;
