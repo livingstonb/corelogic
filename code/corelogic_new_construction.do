@@ -14,7 +14,7 @@ bysort fips apn seq:
 keep if first_sale_is_new_con;
 drop first_sale_is_new_con;
 
-/* Drop properties with subsequent sales listed as new construction */
+/* Drop properties with subsequent sales again listed as new construction */
 bysort fips apn seq (ddate):
 	gen later_new_construction_sale
 		= (_n > 1) & (resale_new_construction_code == "N");
@@ -41,4 +41,6 @@ gen month_new_con = month(date_new_con);
 gen quarter_new_con = quarter(date_new_con);
 
 drop resale_new_construction_code;
+
+/* Below file will not be used unless possibly a bug terminates code later */
 save "${tempdir}/deed.dta", replace;

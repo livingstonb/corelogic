@@ -20,8 +20,6 @@ local tfirst 19930101
 local tlast 20220630
 local selected_query query_within_house.doh
 global datevar recording
-set trace on
-set tracedepth 3
 
 * main query, deed table merged with tax tables by quarter
 do "${codedir}/corelogic_legacy_query.do" `selected_query' `tfirst' `tlast'
@@ -29,22 +27,24 @@ do "${codedir}/corelogic_legacy_query.do" `selected_query' `tfirst' `tlast'
 * append quarters
 do "${codedir}/append_quarters.do" `tfirst' `tlast'
 
+* clean according to new construction indicator
 do "${codedir}/corelogic_new_construction.do"
 
 #delimit ;
-local vars apn sale_amount year_built
+local vars sale_amount year_built
 	land_square_footage universal_building_square_feet;
 foreach var of local vars  {;
+	/* Some of these variables may not exist/were not queried */
 	cap destring `var', force replace;
 };
 	
 local vars sale_amount year_built land_square_footage
 	universal_building_square_feet;
 foreach var of local vars {;
+	/* Some of these variables may not exist/were not queried */
 	cap replace `var' = . if (`var' == 0);
 };
 #delimit cr
 
-compress
 local datestr "`=subinstr("_$S_DATE"," ","_",.)'"
 save "${outdir}/merged`datestr'.dta", replace

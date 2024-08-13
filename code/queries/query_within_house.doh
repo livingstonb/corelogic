@@ -23,9 +23,8 @@ cap odbc load,
 			AND (d."mortgage sequence number" is NULL)
 			AND (d."property indicator code" in ('10'))
 			AND (d."sale amount" > 0)
-			AND (d."fips code" in ('32003'))
 		ORDER BY
-			d."sale date",
+			d."recording date",
 			d."fips code",
 			d."apn unformatted",
 			d."apn sequence number"

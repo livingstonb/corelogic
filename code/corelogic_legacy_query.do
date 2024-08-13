@@ -9,21 +9,22 @@ forvalues yy = 1993/2022 {;
 	forvalues qq = 1/4 {;
 		clear;
 		
+		/* Beginning and end dates for the quarter */
 		if (`qq' == 1) {; local mmdd1 0101; local mmdd2 0331; };
 		else if (`qq' == 2) 	{; local mmdd1 0401; local mmdd2 0630;};
 		else if (`qq' == 3) 	{; local mmdd1 0701; local mmdd2 0930;};
 		else 					{; local mmdd1 1001; local mmdd2 1231;};
 		
-		/* Before sample, ignore */
+		/* Pre-sample period, ignore */
 		if (`yy'`mmdd1' < `tfirst') {;
 			continue;
 		};
-		/* After sample, break out of loop */
+		/* Post-sample period, break out of loop */
 		if (`yy'`mmdd1' > `tlast') {;
 			continue, break;
 		};
 		
-		/* Odd naming convention in 2018q4 tax tables */
+		/* Correct for odd naming convention in 2018q4 tax tables */
 		if ("`yy'q`qq'" == "2018q4") {;
 			local _s_ "_";
 		};
@@ -31,7 +32,7 @@ forvalues yy = 1993/2022 {;
 			local _s_ " ";
 		};
 		
-		/* Query */
+		/* Query itself */
 		include "${codedir}/queries/`selected_query'";
 
 		if (_N > 0) {;
@@ -48,6 +49,8 @@ forvalues yy = 1993/2022 {;
 		else {;
 			di "NO OBSERVATIONS FOR `yy'Q`qq'";
 		};
+		
+		/* These quarterly files will be appended later */
 		save "${tempdir}/transactions`yy'Q`qq'", emptyok replace;
 	};
 };
