@@ -15,7 +15,12 @@ cap odbc load,
 			d."resale new construction code",
 			d."batch id",
 			d."batch seq",
-			d."property zipcode"
+			d."property zipcode",
+			d."owner buyer 1 last name",
+			d."owner buyer 1 first name & m i",
+			d."owner buyer 2 last name",
+			d."owner buyer 2 first name & m i",
+			d."owner corporate indicator flag"
 		FROM
 			corelogic.deed as d
 		WHERE (d."pri cat code" IN ('A'))
