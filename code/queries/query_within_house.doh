@@ -20,7 +20,9 @@ cap odbc load,
 			d."owner buyer 1 first name & m i",
 			d."owner buyer 2 last name",
 			d."owner buyer 2 first name & m i",
-			d."owner corporate indicator flag"
+			d."owner corporate indicator flag",
+			d."seller last name",
+			d."seller first name"
 		FROM
 			corelogic.deed as d
 		WHERE (d."pri cat code" IN ('A'))

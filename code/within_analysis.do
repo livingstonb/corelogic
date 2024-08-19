@@ -1,4 +1,5 @@
 
+cap rename (var12 var14) (owner_buyer_1_frst_name owner_buyer_2_frst_name)
 
 /* FHFA developmental 3-digit zip home price index */
 #delimit ;
@@ -17,24 +18,21 @@ save "`hprice'"
 /* Corelogic */
 use "${project}/corelogic_queries/merged_8_12_24.dta", clear
 
+/* Deal with duplicates */
+duplicates tag fips apn ddate, gen(dup)
+drop if dup > 0
+drop dup
+
 /* 3-digit zip, which FHFA has in integer format  */
 gen zip3 = substr(property_zipcode, 1, 3) if strlen(property_zipcode) == 5
 drop if missing(zip3)
 destring zip3, force replace
-
 
 merge m:1 zip3 dateyq using  "`hprice'", nogen keep(1 3) keepusing(pindex)
 
 /* Clean further */
 drop if missing(pindex)
 drop if missing(apn)
-
-* Drop properties that were never resold
-bysort fips apn seq: egen ntrans = count(sale_amount)
-drop if ntrans == 1
-
-* Drop properties resold too many times
-drop if ntrans >= 20
 
 * Property price at new construction sale
 gen t_price_new_con = sale_amount if first_sale_new_con
