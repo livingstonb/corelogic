@@ -37,12 +37,13 @@ drop later_new_construction_sale has_later_new_con_sale;
 /* Days since sold as new construction */
 gen dsince_new_con = ddate - date_new_con;
 drop if missing(dsince_new_con);
-drop if dsince_new_con < 0;
+drop if dsince_new_con < 0
 
 /* Drop properties that have no repeat sales, or an unreasonable number */
 by fips apn seq: gen ct = _N;
 drop if (ct == 1) | (ct > 20);
 drop ct;
+
 
 drop resale_new_construction_code;
 
