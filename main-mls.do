@@ -2,10 +2,10 @@ clear
 
 // global project "/Users/brianlivingston/Dropbox/NU/Spring 2024/RA/corelogic"
 
-global project "~/charlie-project/corelogic-mls"
-global codedir "${project}/code"
-global tempdir "${project}/temp"
-global outdir "${project}/output"
+global project "~/charlie-project/corelogic"
+global codedir "${project}/code-mls"
+global tempdir "${project}/temp-mls"
+global outdir "${project}/output-mls"
 global datadir "${project}/data"
 
 cd "$project"

@@ -3,6 +3,8 @@ args selected_query tfirst tlast
 * Load packages
 set odbcmgr unixodbc
 
+#delimit ;
+
 /* Loop over all quarters */
 forvalues yy = 1993/2022 {;
 	forvalues qq = 1/4 {;

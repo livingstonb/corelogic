@@ -1,7 +1,7 @@
 
 #delimit ;
 
-if "$singlecounty$" {;
+if $singlecounty {;
 	local restrict_county `"AND (d."fips code" in ('32003'))"';
 };
 

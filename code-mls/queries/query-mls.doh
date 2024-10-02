@@ -1,7 +1,7 @@
 
 #delimit ;
 
-if "$singlecounty" {;
+if $singlecounty {;
 	local restrict_county `"AND (q."cmas_fips_code" in ('32003'))"';
 };
 
@@ -14,8 +14,8 @@ else {;
 	local tax_table tax_`yy'_q`qq';
 };
 
-local date1 = "`yy'-" + substr(`mmdd1', 1, 2) + "-" + substr(`mmdd1', 3, 2));
-local date2 = "`yy'-" + substr(`mmdd2', 1, 2) + "-" + substr(`mmdd2', 3, 2));
+local date1 = "`yy'-" + substr("`mmdd1'", 1, 2) + "-" + substr("`mmdd1'", 3, 2);
+local date2 = "`yy'-" + substr("`mmdd2'", 1, 2) + "-" + substr("`mmdd2'", 3, 2);
 
 /* Query */
 cap odbc load,
@@ -50,13 +50,20 @@ cap odbc load,
 			q."fa_liststatus",
 			q."fa_liststatuscategorycode",
 			q."fa_iscurrentlisting",
-			q."listingstatus"
+			q."listingstatus",
+			t."batch id",
+			t."batch seq",
+			t."bedrooms",
+			t."total baths",
+			t."year built",
+			t."building square feet",
+			t."land square footage"
 		FROM
 			corelogic-mls.quicksearch as q
-		INNER JOIN corelogic.`tax_table' as t
-			ON (t."FIPS`_s_'CODE"=q."cmas_fips_code")
-				AND (t."APN`_s_'UNFORMATTED"=q."fa_apn")
-				AND (cast(t."APN`_s_'SEQUENCE`_s_'NUMBER" as bigint)
+		INNER JOIN corelogic.tax_2019_q1 as t
+			ON (t."FIPS CODE"=q."cmas_fips_code")
+				AND (t."APN UNFORMATTED"=q."fa_apn")
+				AND (cast(t."APN SEQUENCE NUMBER" as bigint)
 							=q."cmas_parcel_seq_nbr")
 		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH'))
 			AND (q."fa_rent_sale_ind" = 'S')
