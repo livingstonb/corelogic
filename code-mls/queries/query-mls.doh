@@ -51,27 +51,27 @@ cap odbc load,
 			q."fa_liststatuscategorycode",
 			q."fa_iscurrentlisting",
 			q."listingstatus",
-			t."batch id",
-			t."batch seq",
+			t."batch`_s_'id",
+			t."batch`_s_'seq",
 			t."bedrooms",
-			t."total baths",
-			t."year built",
-			t."building square feet",
-			t."land square footage"
+			t."total`_s_'baths",
+			t."year`_s_'built",
+			t."building`_s_'square`_s_'feet",
+			t."land`_s_'square`_s_'footage"
 		FROM
 			corelogic-mls.quicksearch as q
-		INNER JOIN corelogic.tax_2019_q1 as t
-			ON (t."FIPS CODE"=q."cmas_fips_code")
-				AND (t."APN UNFORMATTED"=q."fa_apn")
-				AND (cast(t."APN SEQUENCE NUMBER" as bigint)
+		INNER JOIN corelogic.`tax_table' as t
+			ON (t."FIPS`_s_'CODE"=q."cmas_fips_code")
+				AND (t."APN`_s_'UNFORMATTED"=q."fa_apn")
+				AND (cast(t."APN`_s_'SEQUENCE`_s_'NUMBER" as bigint)
 							=q."cmas_parcel_seq_nbr")
 		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH'))
 			AND (q."fa_rent_sale_ind" = 'S')
 			AND (q."fa_listdate" BETWEEN `"'`date1''"' and `"'`date2''"')
 			`restrict_county'
 		ORDER BY
-			d."sale date",
-			d."fips code",
-			d."apn unformatted",
-			d."apn sequence number"
+			q."fa_listdate",
+			q."cmas_fips_code",
+			q."cmas_parcel_id",
+			q."cmas_parcel_seq_nbr"
 	"');
