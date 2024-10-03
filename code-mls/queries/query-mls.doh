@@ -25,7 +25,6 @@ odbc load,
 		dsn("SimbaAthena")
 		exec(`"
 		SELECT
-			q."fa_apn",
 			q."cmas_parcel_id",
 			q."cmas_parcel_seq_nbr",
 			q."cmas_fips_code", 
@@ -45,9 +44,10 @@ odbc load,
 			q."modificationtimestamp",
 			q."dom",
 			q."domcumulative",
-			q."leasedate",
+			q."fa_offmarket",
 			q."fa_closedate",
 			q."closedate",
+			q."withdrawndate",
 			q."fa_rent_sale_ind",
 			q."rentsalelease",
 			q."fa_liststatus",
@@ -63,9 +63,9 @@ odbc load,
 			t."land`_s_'square`_s_'footage"
 		FROM
 			"corelogic-mls".quicksearch as q
-		INNER JOIN corelogic.`tax_table' as t
+		FULL OUTER JOIN corelogic.`tax_table' as t
 			ON (t."FIPS`_s_'CODE"=q."cmas_fips_code")
-				AND (t."APN`_s_'UNFORMATTED"=q."fa_apn")
+				AND (t."APN`_s_'UNFORMATTED"=q."cmas_parcel_id")
 				AND (cast(t."APN`_s_'SEQUENCE`_s_'NUMBER" as bigint)=q."cmas_parcel_seq_nbr")
 		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH'))
 			AND (q."fa_rent_sale_ind"='S')

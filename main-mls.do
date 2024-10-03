@@ -28,9 +28,11 @@ set tracedepth 1
 * main query, deed table merged with tax tables by quarter
 do "${codedir}/corelogic_legacy_query.do" `selected_query' `tfirst' `tlast'
 
-/*
 * append quarters
 do "${codedir}/append_quarters.do" `tfirst' `tlast'
+
+/*
+
 
 * clean according to new construction indicator
 do "${codedir}/corelogic_new_construction.do"
