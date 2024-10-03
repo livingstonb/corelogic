@@ -54,7 +54,6 @@ forvalues yy = 1993/2022 {;
 		/* These quarterly files will be appended later */
 		save "${tempdir}/data`yy'Q`qq'", emptyok replace;
 		
-		/* MLS (listings) query */
-		include "${codedir}/queries/`selected_query'";
+		
 	};
 };

@@ -22,6 +22,9 @@ local selected_query query-mls.doh
 global datevar recording
 global singlecounty 1
 
+set trace on
+set tracedepth 1
+
 * main query, deed table merged with tax tables by quarter
 do "${codedir}/corelogic_legacy_query.do" `selected_query' `tfirst' `tlast'
 
