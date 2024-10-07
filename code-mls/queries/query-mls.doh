@@ -2,7 +2,7 @@
 #delimit ;
 
 if $singlecounty {;
-	local restrict_county AND (q."cmas_fips_code" in ('44140'));
+	local restrict_county AND (q."cmas_fips_code" in ('08041'));
 };
 
 local date1 = "`yy'" + "-" + substr("`mmdd1'",1,2) + "-" + substr("`mmdd1'",3,2);

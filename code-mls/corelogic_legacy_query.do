@@ -9,7 +9,9 @@ set odbcmgr unixodbc
 
 local quicksearch_table quicksearch;
 
-forvalues yy = 1993/2022 {;
+save "${tempdir}/data_mls.dta", replace emptyok;
+
+forvalues yy = 2000/2022 {;
 	forvalues qq = 1/4 {;
 		clear;
 		
@@ -56,14 +58,14 @@ forvalues yy = 1993/2022 {;
 		
 		/* These quarterly files will be appended later */
 		save "${tempdir}/data`yy'Q`qq'", emptyok replace;
+		append using "${tempdir}/data_mls.dta";
+		save "${tempdir}/data_mls.dta", replace emptyok;
 		
 		
 	};
 };
 
 clear;
-save "${tempdir}/data_updates.dta", replace emptyok;
-
 local mmdd 0101 0401 0701 1001;
 forvalues yy = 2019/2022 {;
 	foreach val of local mmdd {;
@@ -78,7 +80,7 @@ forvalues yy = 2019/2022 {;
 		local quicksearch_table quicksearch_`yy'`mmdd';
 		include "${codedir}/queries/`selected_query'";
 		
-		append using "${tempdir}/data_updates.dta";
-		save "${tempdir}/data_updates.dta", replace emptyok;
+		append using "${tempdir}/data_mls.dta";
+		save "${tempdir}/data_mls.dta", replace emptyok;
 	};
 };
