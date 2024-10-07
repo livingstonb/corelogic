@@ -25,7 +25,7 @@ global singlecounty 1
 set trace on
 set tracedepth 1
 
-* main query, deed table merged with tax tables by quarter
+* main query, listings (mls)
 do "${codedir}/corelogic_legacy_query.do" `selected_query' `tfirst' `tlast'
 
 * append quarters

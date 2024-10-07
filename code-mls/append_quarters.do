@@ -28,7 +28,7 @@ forvalues yy = 1993/2022 {;
 			continue, break;
 		};
 
-		append using "${tempdir}/transactions`yy'Q`qq'.dta";
+		cap append using "${tempdir}/data`yy'Q`qq'.dta";
 	};
 };
 

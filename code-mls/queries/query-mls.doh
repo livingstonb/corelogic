@@ -2,7 +2,7 @@
 #delimit ;
 
 if $singlecounty {;
-	local restrict_county AND (q."cmas_fips_code" in ('32003'));
+	local restrict_county AND (q."cmas_fips_code" in ('44140'));
 };
 
 /* Create local for tax table name */
@@ -44,7 +44,7 @@ odbc load,
 			q."modificationtimestamp",
 			q."dom",
 			q."domcumulative",
-			q."fa_offmarket",
+			q."fa_offmarketdate",
 			q."fa_closedate",
 			q."closedate",
 			q."withdrawndate",
@@ -53,21 +53,10 @@ odbc load,
 			q."fa_liststatus",
 			q."fa_liststatuscategorycode",
 			q."fa_iscurrentlisting",
-			q."listingstatus",
-			t."batch`_s_'id",
-			t."batch`_s_'seq",
-			t."bedrooms",
-			t."total`_s_'baths",
-			t."year`_s_'built",
-			t."building`_s_'square`_s_'feet",
-			t."land`_s_'square`_s_'footage"
+			q."listingstatus"
 		FROM
 			"corelogic-mls".quicksearch as q
-		FULL OUTER JOIN corelogic.`tax_table' as t
-			ON (t."FIPS`_s_'CODE"=q."cmas_fips_code")
-				AND (t."APN`_s_'UNFORMATTED"=q."cmas_parcel_id")
-				AND (cast(t."APN`_s_'SEQUENCE`_s_'NUMBER" as bigint)=q."cmas_parcel_seq_nbr")
-		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH'))
+		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP, ))
 			AND (q."fa_rent_sale_ind"='S')
 			AND (q."fa_listdate" BETWEEN `date1' AND `date2')
 			`restrict_county'
@@ -77,3 +66,19 @@ odbc load,
 			q."cmas_parcel_id",
 			q."cmas_parcel_seq_nbr"
 	"');
+
+/*
+
+			t."bedrooms",
+			t."total`_s_'baths",
+			t."year`_s_'built",
+			t."building`_s_'square`_s_'feet",
+			t."land`_s_'square`_s_'footage",
+			t."batch`_s_'id",
+			t."batch`_s_'seq"
+			
+FULL OUTER JOIN corelogic.`tax_table' as t
+	ON (t."FIPS`_s_'CODE"=q."cmas_fips_code")
+		AND (t."APN`_s_'UNFORMATTED"=q."cmas_parcel_id")
+		AND (cast(t."APN`_s_'SEQUENCE`_s_'NUMBER" as bigint)=q."cmas_parcel_seq_nbr")
+*/
