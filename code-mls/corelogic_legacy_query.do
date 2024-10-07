@@ -6,6 +6,9 @@ set odbcmgr unixodbc
 #delimit ;
 
 /* Loop over all quarters */
+
+local quicksearch_table quicksearch;
+
 forvalues yy = 1993/2022 {;
 	forvalues qq = 1/4 {;
 		clear;
@@ -55,5 +58,27 @@ forvalues yy = 1993/2022 {;
 		save "${tempdir}/data`yy'Q`qq'", emptyok replace;
 		
 		
+	};
+};
+
+clear;
+save "${tempdir}/data_updates.dta", replace emptyok;
+
+local mmdd 0101 0401 0701 1001;
+forvalues yy = 2019/2022 {;
+	foreach val of local mmdd {;
+		clear;
+		if `yy'`mmdd' < 20190701 {;
+			continue;
+		};
+		else if `yy'`mmdd' > 20220101 {;
+			continue, break;
+		};
+		
+		local quicksearch_table quicksearch_`yy'`mmdd';
+		include "${codedir}/queries/`selected_query'";
+		
+		append using "${tempdir}/data_updates.dta";
+		save "${tempdir}/data_updates.dta", replace emptyok;
 	};
 };

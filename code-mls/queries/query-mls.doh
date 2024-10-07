@@ -5,6 +5,17 @@ if $singlecounty {;
 	local restrict_county AND (q."cmas_fips_code" in ('44140'));
 };
 
+local date1 = "`yy'" + "-" + substr("`mmdd1'",1,2) + "-" + substr("`mmdd1'",3,2);
+local date2 = "`yy'" + "-" + substr("`mmdd2'",1,2) + "-" + substr("`mmdd2'",3,2);
+
+if "`quicksearch_table'" == "quicksearch" {;
+	local restrict_date AND (q."fa_listdate" BETWEEN '`date1'' AND '`date2'');
+};
+else {;
+	local restrict_date;
+};
+
+
 /* Create local for tax table name */
 if  (`yy'`mmdd1' < 20150401) {;
 	/* Fix property characteristics for all pre-2015q2 transactions */
@@ -14,11 +25,11 @@ else {;
 	local tax_table tax_`yy'_q`qq';
 };
 
-local date1 = "`yy'" + "-" + substr("`mmdd1'",1,2) + "-" + substr("`mmdd1'",3,2);
-local date2 = "`yy'" + "-" + substr("`mmdd2'",1,2) + "-" + substr("`mmdd2'",3,2);
 
+/*
 local date1 = "'" + "`date1'" + "'";
 local date2 = "'" + "`date2'" + "'";
+*/
 
 /* Query */
 odbc load,
@@ -55,10 +66,10 @@ odbc load,
 			q."fa_iscurrentlisting",
 			q."listingstatus"
 		FROM
-			"corelogic-mls".quicksearch as q
-		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP, ))
+			"corelogic-mls".`quicksearch_table' as q
+		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP'))
 			AND (q."fa_rent_sale_ind"='S')
-			AND (q."fa_listdate" BETWEEN `date1' AND `date2')
+			`restrict_date'
 			`restrict_county'
 		ORDER BY
 			q."fa_listdate",

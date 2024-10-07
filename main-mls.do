@@ -28,8 +28,8 @@ set tracedepth 1
 * main query, listings (mls)
 do "${codedir}/corelogic_legacy_query.do" `selected_query' `tfirst' `tlast'
 
-* append quarters
-do "${codedir}/append_quarters.do" `tfirst' `tlast'
+/* append quarters
+do "${codedir}/append_quarters.do" `tfirst' `tlast' */
 
 /*
 
