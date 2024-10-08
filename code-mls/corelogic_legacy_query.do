@@ -9,11 +9,11 @@ set odbcmgr unixodbc
 
 if "`selected_query'" == "query-mls.doh" {;
 	local quicksearch_table quicksearch;
-	local filename "${tempdir}/data_mls.dta"
+	local filename "${tempdir}/data_mls.dta";
 	save "`filename'", replace emptyok;
 };
 else if "`selected_query'" == "query-deed.doh" {;
-	local filename "${tempdir}/data_deed.dta"
+	local filename "${tempdir}/data_deed.dta";
 	save "`filename'", replace emptyok;
 };
 

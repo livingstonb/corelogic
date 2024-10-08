@@ -19,7 +19,7 @@ set odbcmgr unixodbc
 local tfirst 20000101
 local tlast 20220630
 global datevar recording
-global singlecounty "08041"
+global singlecounty "32003"
 
 set trace on
 set tracedepth 1

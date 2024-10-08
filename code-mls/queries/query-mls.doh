@@ -57,7 +57,7 @@ odbc load,
 			q."fa_offmarketdate",
 			q."fa_closedate",
 			q."closedate",
-			q."withdrawndate",
+			q."withdrawndate"
 		FROM
 			"corelogic-mls".`quicksearch_table' as q
 		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP'))
