@@ -7,7 +7,7 @@ gen source = "deed";
 append using  "${tempdir}/data_mls_cleaned.dta";
 gen source = "mls" if missing(source);
 
-/* date */
+/* Date */
 gen strdate = substr(date, 1, 10);
 gen ddate = date(strdate, "YMD");
 rename ddate date;
@@ -19,3 +19,6 @@ gen qdate = qofd(date);
 format %tq date;
 
 drop strdate ddate;
+
+/* Save */
+save "${tempdir}/deed_mls_combined.dta", replace;
