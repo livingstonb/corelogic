@@ -5,10 +5,11 @@ use "${tempdir}/data_deed_cleaned.dta", clear;
 gen source = "deed";
 
 append using  "${tempdir}/data_mls_cleaned.dta";
-gen source = "mls" if missing(source);
+replace source = "mls" if missing(source);
 
 /* Date */
 gen strdate = substr(date, 1, 10);
+drop date;
 gen ddate = date(strdate, "YMD");
 rename ddate date;
 format %td date;

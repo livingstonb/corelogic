@@ -2,7 +2,7 @@
 #delimit ;
 
 if "$singlecounty" != "" {;
-	local restrict_county AND (d."fips code" in ('${singlecounty}));
+	local restrict_county AND (d."fips code" in ('${singlecounty}'));
 };
 
 /* Create local for tax table name */
