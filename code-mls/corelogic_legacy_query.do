@@ -7,11 +7,17 @@ set odbcmgr unixodbc
 
 /* Loop over all quarters */
 
-local quicksearch_table quicksearch;
+if "`selected_query'" == "query-mls.doh" {;
+	local quicksearch_table quicksearch;
+	local filename "${tempdir}/data_mls.dta"
+	save "`filename'", replace emptyok;
+};
+else if "`selected_query'" == "query-deed.doh" {;
+	local filename "${tempdir}/data_deed.dta"
+	save "`filename'", replace emptyok;
+};
 
-save "${tempdir}/data_mls.dta", replace emptyok;
-
-forvalues yy = 2000/2022 {;
+forvalues yy = 1993/2022 {;
 	forvalues qq = 1/4 {;
 		clear;
 		
@@ -41,46 +47,37 @@ forvalues yy = 2000/2022 {;
 		/* Query itself */
 		include "${codedir}/queries/`selected_query'";
 
-		if (_N > 0) {;
-			capture {;
-				rename fips_code fips;
-				rename (apn_unformatted apn_sequence_number) (apn seq);
-				gen dateyq = quarterly("`yy'Q`qq'","YQ");
-				format %tq dateyq;
-				
-				gen year = `yy';
-				gen quarter = `qq';
-			};
-		};
-		else {;
+		if (_N == 0) {;
 			di "NO OBSERVATIONS FOR `yy'Q`qq'";
 		};
 		
 		/* These quarterly files will be appended later */
 		save "${tempdir}/data`yy'Q`qq'", emptyok replace;
-		append using "${tempdir}/data_mls.dta";
-		save "${tempdir}/data_mls.dta", replace emptyok;
+		append using "`filename'";
+		save "`filename'", replace emptyok;
 		
 		
 	};
 };
 
-clear;
-local mmdd 0101 0401 0701 1001;
-forvalues yy = 2019/2022 {;
-	foreach val of local mmdd {;
-		clear;
-		if `yy'`mmdd' < 20190701 {;
-			continue;
+if "`selected_query'" == "query-mls.doh" {;
+	clear;
+	local mmdd 0101 0401 0701 1001;
+	forvalues yy = 2019/2022 {;
+		foreach val of local mmdd {;
+			clear;
+			if `yy'`mmdd' < 20190701 {;
+				continue;
+			};
+			else if `yy'`mmdd' > 20220101 {;
+				continue, break;
+			};
+			
+			local quicksearch_table quicksearch_`yy'`mmdd';
+			include "${codedir}/queries/`selected_query'";
+			
+			append using "`filename'";
+			save "`filename'", replace emptyok;
 		};
-		else if `yy'`mmdd' > 20220101 {;
-			continue, break;
-		};
-		
-		local quicksearch_table quicksearch_`yy'`mmdd';
-		include "${codedir}/queries/`selected_query'";
-		
-		append using "${tempdir}/data_mls.dta";
-		save "${tempdir}/data_mls.dta", replace emptyok;
 	};
 };

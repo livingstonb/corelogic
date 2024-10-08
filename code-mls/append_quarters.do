@@ -16,7 +16,7 @@ if ("`mmdd1'" == "0101") {; local q1 1;};
 	else if ("`mmdd1'" == "1001") {; local q1 4;};
 clear;
 
-forvalues yy = 1993/2022 {;
+forvalues yy = 2000/2022 {;
 	forvalues qq = 1/4 {;
 		
 		if (`yy'`qq' < `year1'`q1') {;

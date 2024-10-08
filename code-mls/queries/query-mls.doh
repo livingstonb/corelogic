@@ -1,8 +1,8 @@
 
 #delimit ;
 
-if $singlecounty {;
-	local restrict_county AND (q."cmas_fips_code" in ('08041'));
+if "$singlecounty" != "" {;
+	local restrict_county AND (q."cmas_fips_code" in ('`singlecounty''));
 };
 
 local date1 = "`yy'" + "-" + substr("`mmdd1'",1,2) + "-" + substr("`mmdd1'",3,2);
@@ -54,17 +54,10 @@ odbc load,
 			q."fa_postdate",
 			q."modificationtimestamp",
 			q."dom",
-			q."domcumulative",
 			q."fa_offmarketdate",
 			q."fa_closedate",
 			q."closedate",
 			q."withdrawndate",
-			q."fa_rent_sale_ind",
-			q."rentsalelease",
-			q."fa_liststatus",
-			q."fa_liststatuscategorycode",
-			q."fa_iscurrentlisting",
-			q."listingstatus"
 		FROM
 			"corelogic-mls".`quicksearch_table' as q
 		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP'))

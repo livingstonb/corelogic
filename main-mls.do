@@ -16,17 +16,24 @@ cap mkdir "$outdir"
 set odbcmgr unixodbc
 
 * config
-local tfirst 19930101
+local tfirst 20000101
 local tlast 20220630
-local selected_query query-mls.doh
 global datevar recording
-global singlecounty 1
+global singlecounty "08041"
 
 set trace on
 set tracedepth 1
 
 * main query, listings (mls)
-do "${codedir}/corelogic_legacy_query.do" `selected_query' `tfirst' `tlast'
+do "${codedir}/corelogic_legacy_query.do" "query-mls.doh" `tfirst' `tlast'
+do "${codedir}/clean_mls.do"
+
+do "${codedir}/corelogic_legacy_query.do" "query-deed.doh" `tfirst' `tlast'
+do "${codedir}/clean_deed.do"
+
+* append and standardize
+do "${codedir}/append_deed_mls.do"
+
 
 /* append quarters
 do "${codedir}/append_quarters.do" `tfirst' `tlast' */
