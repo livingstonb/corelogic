@@ -26,9 +26,10 @@ set tracedepth 1
 
 * main query, listings (mls)
 do "${codedir}/corelogic_legacy_query.do" "query-mls.doh" `tfirst' `tlast'
-do "${codedir}/clean_mls.do"
-
 do "${codedir}/corelogic_legacy_query.do" "query-deed.doh" `tfirst' `tlast'
+
+* clean
+do "${codedir}/clean_mls.do"
 do "${codedir}/clean_deed.do"
 
 * append and standardize

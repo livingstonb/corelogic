@@ -2,7 +2,7 @@
 #delimit ;
 
 if "$singlecounty" != "" {;
-	local restrict_county AND (d."fips code" in ('`singlecounty''));
+	local restrict_county AND (d."fips code" in ('${singlecounty}));
 };
 
 /* Create local for tax table name */
@@ -28,7 +28,9 @@ cap odbc load,
 			d."sale amount",
 			d."resale new construction code",
 			d."batch id",
-			d."batch seq"
+			d."batch seq",
+			d."property indicator code",
+			d."universal land use code"
 		FROM
 			corelogic.deed as d
 		WHERE (d."pri cat code" IN ('A'))

@@ -18,7 +18,7 @@ gen month = month(date);
 gen qdate = qofd(date);
 format %tq date;
 
-drop strdate ddate;
+drop strdate;
 
 /* Save */
 save "${tempdir}/deed_mls_combined.dta", replace;

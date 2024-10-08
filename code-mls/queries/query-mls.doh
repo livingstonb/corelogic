@@ -2,7 +2,7 @@
 #delimit ;
 
 if "$singlecounty" != "" {;
-	local restrict_county AND (q."cmas_fips_code" in ('`singlecounty''));
+	local restrict_county AND (q."cmas_fips_code" in ('${singlecounty}');
 };
 
 local date1 = "`yy'" + "-" + substr("`mmdd1'",1,2) + "-" + substr("`mmdd1'",3,2);
@@ -45,6 +45,7 @@ odbc load,
 			q."addresscountyorparish",
 			q."addressstreetaddress",
 			q."addressunitnumber",
+			q."fa_propertytype",
 			q."cmas_zip5",
 			q."fa_listdate",
 			q."fa_listid",
@@ -70,6 +71,8 @@ odbc load,
 			q."cmas_parcel_id",
 			q."cmas_parcel_seq_nbr"
 	"');
+	
+cap gen table = "`quicksearch_table'";
 
 /*
 
