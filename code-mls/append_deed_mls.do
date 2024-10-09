@@ -17,9 +17,23 @@ format %td date;
 gen year = year(date);
 gen month = month(date);
 gen qdate = qofd(date);
-format %tq date;
+format %tq qdate;
 
 drop strdate;
 
+sort date;
+
 /* Save */
 save "${tempdir}/deed_mls_combined.dta", replace;
+
+
+#delimit ;
+/* Standardize */
+use "${tempdir}/deed_mls_combined.dta", clear;
+
+egen propid = group(fips apn_unf apn_seq);
+drop if missing(propid);
+sort propid date;
+
+destring sale_amount, force replace;
+

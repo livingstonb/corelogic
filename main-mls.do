@@ -16,10 +16,10 @@ cap mkdir "$outdir"
 set odbcmgr unixodbc
 
 * config
-local tfirst 20000101
+local tfirst 19950101
 local tlast 20220630
 global datevar recording
-global singlecounty "32003"
+global singlecounty "48141"
 
 set trace on
 set tracedepth 1

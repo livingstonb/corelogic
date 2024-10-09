@@ -30,7 +30,16 @@ cap odbc load,
 			d."batch id",
 			d."batch seq",
 			d."property indicator code",
-			d."universal land use code"
+			d."universal land use code",
+			d."owner corporate indicator flag",
+			d."document type code",
+			d."equity flag code",
+			d."inter family flag"
+			d."forclosure code",
+			d."owner ownership rights code",
+			d."residential model indicator flag",
+			d."sale code",
+			d."transaction type code"
 		FROM
 			corelogic.deed as d
 		WHERE (d."pri cat code" IN ('A'))
