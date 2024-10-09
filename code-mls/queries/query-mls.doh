@@ -2,7 +2,7 @@
 #delimit ;
 
 if "$singlecounty" != "" {;
-	local restrict_county AND (q."cmas_fips_code" in ('${singlecounty}');
+	local restrict_county AND (q."cmas_fips_code" in ('${singlecounty}'));
 };
 
 local date1 = "`yy'" + "-" + substr("`mmdd1'",1,2) + "-" + substr("`mmdd1'",3,2);
