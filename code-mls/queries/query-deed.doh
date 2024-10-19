@@ -34,7 +34,7 @@ cap odbc load,
 			d."owner corporate indicator flag",
 			d."document type code",
 			d."equity flag code",
-			d."inter family flag"
+			d."inter family flag",
 			d."forclosure code",
 			d."owner ownership rights code",
 			d."residential model indicator flag",

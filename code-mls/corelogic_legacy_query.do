@@ -66,14 +66,14 @@ if "`selected_query'" == "query-mls.doh" {;
 	forvalues yy = 2019/2022 {;
 		foreach val of local mmdd {;
 			clear;
-			if `yy'`mmdd' < 20190701 {;
+			if `yy'`val' < 20190701 {;
 				continue;
 			};
-			else if `yy'`mmdd' > 20220101 {;
+			else if `yy'`val' > 20220101 {;
 				continue, break;
 			};
 			
-			local quicksearch_table quicksearch_`yy'`mmdd';
+			local quicksearch_table quicksearch_`yy'`val';
 			include "${codedir}/queries/`selected_query'";
 			
 			append using "`filename'";
