@@ -10,3 +10,4 @@ template.do
 *.log
 *.dta
 /corelogic_queries
+*.png
