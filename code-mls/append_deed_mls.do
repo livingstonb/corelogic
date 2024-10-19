@@ -69,4 +69,7 @@ format %tm mdate;
 order propid date sale_amount source fa_closedate fa_offmarketdate
 	prev_deed;
 	
-tab mdate if newlisting;
+collapse (sum) newlisting, by(mdate fips);
+rename newlisting new_listings;
+
+save "${outdir}/time_series_corelogic.dta", replace;
