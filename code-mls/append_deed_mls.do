@@ -8,12 +8,6 @@ append using  "${tempdir}/data_mls_cleaned.dta";
 replace source = "mls" if missing(source);
 
 /* Date */
-gen strdate = substr(date, 1, 10);
-drop date;
-gen ddate = date(strdate, "YMD");
-rename ddate date;
-format %td date;
-
 gen year = year(date);
 gen month = month(date);
 gen qdate = qofd(date);
@@ -30,8 +24,9 @@ save "${tempdir}/deed_mls_combined.dta", replace;
 /* Standardize */
 use "${tempdir}/deed_mls_combined.dta", clear;
 
-drop if strlen(apn_unf) < 11;
+/* drop if strlen(apn_unf) < 11; */
 drop if apn_unf == "00000000000";
+drop if apn_seq == 0 | missing(apn_seq);
 egen propid = group(fips apn_unf apn_seq);
 drop apn_unf apn_seq;
 drop if missing(propid);
@@ -71,5 +66,6 @@ order propid date sale_amount source fa_closedate fa_offmarketdate
 	
 collapse (sum) newlisting, by(mdate fips);
 rename newlisting new_listings;
+drop if missing(mdate);
 
 save "${outdir}/time_series_corelogic.dta", replace;

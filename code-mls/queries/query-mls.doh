@@ -63,6 +63,7 @@ odbc load,
 			"corelogic-mls".`quicksearch_table' as q
 		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP'))
 			AND (q."fa_rent_sale_ind"='S')
+			WHERE (q."fa_listdate" != '')
 			`restrict_date'
 			`restrict_county'
 		ORDER BY
