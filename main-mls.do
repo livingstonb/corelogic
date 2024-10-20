@@ -17,9 +17,9 @@ set odbcmgr unixodbc
 
 * config
 local tfirst 20000101
-local tlast 20220630
+local tlast 20240630
 global datevar recording
-global singlecounty "37045"
+global singlecounty "39035"
 global new_listing_cutoff 180
 
 set trace on
