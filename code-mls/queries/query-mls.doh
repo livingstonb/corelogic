@@ -57,6 +57,7 @@ odbc load,
 			q."dom",
 			q."fa_offmarketdate",
 			q."fa_closedate",
+			q."fa_propertytype",
 			q."closedate",
 			q."withdrawndate"
 		FROM
