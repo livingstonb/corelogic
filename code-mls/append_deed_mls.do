@@ -24,44 +24,47 @@ save "${tempdir}/deed_mls_combined.dta", replace;
 /* Standardize */
 use "${tempdir}/deed_mls_combined.dta", clear;
 
+/* Try other housing definitions
+drop if inlist(property_indicator_code, "21", "22");
+drop if inlist(fa_propertytype, "MF", "RI", "TH");
+*/
+
 /* drop if strlen(apn_unf) < 11; */
 drop if apn_unf == "00000000000";
 drop if apn_seq == 0 | missing(apn_seq);
-egen propid = group(fips apn_unf apn_seq);
-drop apn_unf apn_seq;
-drop if missing(propid);
-sort propid date;
+drop if missing(apn_unf);
+sort fips apn_unf apn_seq date;
 
 destring sale_amount, force replace;
 
-duplicates tag propid date if source == "deed", gen(dup);
-bysort propid: egen num_dups = max(dup);
+duplicates tag fips apn_unf apn_seq date if source == "deed", gen(dup);
+bysort fips apn_unf apn_seq: egen num_dups = max(dup);
 drop if (num_dups > 0) & !missing(num_dups);
-duplicates drop propid date, force;
+duplicates drop fips apn_unf apn_seq date, force;
 
 /* Get new listings */
-order propid date source;
-sort propid date;
+order fips apn_unf apn_seq date source;
+sort fips apn_unf apn_seq date;
 
 /* New listing if not listed for 6 months without intervening sale */
-bysort propid (date): gen prev_deed = (source[_n-1] == "deed");
-bysort propid (date): gen prev_mls = (source[_n-1] == "mls");
+bysort fips apn_unf apn_seq (date): gen prev_deed = (source[_n-1] == "deed");
+bysort fips apn_unf apn_seq (date): gen prev_mls = (source[_n-1] == "mls");
 
-bysort propid (date): gen newlisting = 1 if _n == 1;
+bysort fips apn_unf apn_seq (date): gen newlisting = 1 if _n == 1;
 
 replace newlisting = 1 if (source == "mls") & prev_deed;
 replace newlisting = 1 if (source == "deed") & prev_deed;
 
-bysort propid (date): replace newlisting = 1 if (source == "mls") & prev_mls &
+bysort fips apn_unf apn_seq (date): replace newlisting = 1 if (source == "mls") & prev_mls &
 	(date - date[_n-1] > ${new_listing_cutoff});
 replace newlisting = 0 if missing(newlisting);
 
-bysort propid (date): gen listing_group = sum(newlisting);
+bysort fips apn_unf apn_seq (date): gen listing_group = sum(newlisting);
 
 gen mdate = mofd(date);
 format %tm mdate;
 
-order propid date sale_amount source fa_closedate fa_offmarketdate
+order fips apn_unf apn_seq date sale_amount source fa_closedate fa_offmarketdate
 	prev_deed;
 	
 collapse (sum) newlisting, by(mdate fips);
