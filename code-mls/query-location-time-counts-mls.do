@@ -19,9 +19,10 @@ clear;
 local table_suffixes NONE 20190701 20191001 20200101 20200401 20200701 20201001
 	20210101 20210401 20210701 20211001 20220101;
 
-save "${outputdir}/listing_counts.dta", emptyok replace;
+save "${outdir}/listing_counts.dta", emptyok replace;
 foreach suffix of local table_suffixes {;
-	
+	clear;
+
 	if "`suffix'" == "NONE" {;
 		local table quicksearch;
 	};
@@ -51,12 +52,12 @@ foreach suffix of local table_suffixes {;
 			GROUP BY d."cmas_zip5", substring(d."fa_listdate",7,5)
 			ORDER BY
 				d."cmas_zip5",
-				d."year"
+				substring(d."fa_listdate",7,5)
 		"');
 		
-	append using "${outputdir}/listing_counts.dta";
-	save "${outputdir}/listing_counts.dta", replace;
+	append using "${outdir}/listing_counts.dta";
+	save "${outdir}/listing_counts.dta", replace;
 };
 
 rename cmas_zip5 zip;
-save "${outputdir}/listing_counts.dta", replace;
+save "${outdir}/listing_counts.dta", replace;

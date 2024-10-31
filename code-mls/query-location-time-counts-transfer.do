@@ -13,12 +13,9 @@ set odbcmgr unixodbc
 
 #delimit ;
 clear;
-
-save "${outputdir}/deed_counts.dta", emptyok replace;
-foreach suffix of local table_suffixes {;
-
-	/* Query */
-	odbc load,
+	
+/* Query */
+odbc load,
 			dsn("SimbaAthena")
 			exec(`"
 			SELECT d."property zipcode",
@@ -41,12 +38,8 @@ foreach suffix of local table_suffixes {;
 			GROUP BY d."cmas_zip5", substring(d."recording date",1,4)
 			ORDER BY
 				d."property zipcode",
-				d."year"
+				substring(d."recording date",1,4)
 		"');
 		
-	append using "${outputdir}/deed_counts.dta";
-	save "${outputdir}/deed_counts.dta", replace;
-};
-
 rename property_zipcode zip;
-save "${outputdir}/deed_counts.dta", replace;
+save "${outdir}/deed_counts.dta", replace;
