@@ -18,8 +18,8 @@ clear;
 odbc load,
 			dsn("SimbaAthena")
 			exec(`"
-			SELECT d."property zipcode",
-				substring(d."recording date",1,4) as year,
+			SELECT substring(d."property zipcode",1,5) as zip5,
+				floor(d."recording date" / 10000) as year,
 				count(*) as sales_counts
 			FROM (
 				SELECT DISTINCT q."property zipcode",
@@ -35,10 +35,10 @@ odbc load,
 					AND (q."mortgage sequence number" is NULL)
 					AND (q."sale amount" > 0)
 				) as d
-			GROUP BY d."cmas_zip5", substring(d."recording date",1,4)
+			GROUP BY substring(d."property zipcode",1,5), floor(d."recording date" / 10000)
 			ORDER BY
-				d."property zipcode",
-				substring(d."recording date",1,4)
+				substring(d."property zipcode",1,5),
+				floor(d."recording date" / 10000)
 		"');
 		
 rename property_zipcode zip;

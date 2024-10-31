@@ -25,9 +25,11 @@ foreach suffix of local table_suffixes {;
 
 	if "`suffix'" == "NONE" {;
 		local table quicksearch;
+		local year_start_position 1;
 	};
 	else {;
 		local table quicksearch_`suffix';
+		local year_start_position 8;
 	};
 
 	/* Query */
@@ -35,7 +37,7 @@ foreach suffix of local table_suffixes {;
 			dsn("SimbaAthena")
 			exec(`"
 			SELECT d."cmas_zip5",
-				substring(d."fa_listdate",7,5) as year,
+				substring(d."fa_listdate",`year_start_position',4) as year,
 				count(*) as listings
 			FROM (
 				SELECT DISTINCT q."cmas_zip5",
@@ -49,10 +51,10 @@ foreach suffix of local table_suffixes {;
 					AND (q."fa_rent_sale_ind"='S')
 					AND (q."fa_listdate" != '')
 				) as d
-			GROUP BY d."cmas_zip5", substring(d."fa_listdate",7,5)
+			GROUP BY d."cmas_zip5", substring(d."fa_listdate",`year_start_position',4)
 			ORDER BY
 				d."cmas_zip5",
-				substring(d."fa_listdate",7,5)
+				substring(d."fa_listdate",`year_start_position',4)
 		"');
 		
 	append using "${outdir}/listing_counts.dta";
