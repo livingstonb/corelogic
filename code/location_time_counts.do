@@ -1,10 +1,8 @@
 
-
-
 global project "~/charlie-project/corelogic"
-global codedir "${project}/code-mls"
-global tempdir "${project}/temp-mls"
-global outdir "${project}/output-mls"
+global codedir "${project}/code"
+global tempdir "${project}/temp"
+global outdir "${project}/output"
 global datadir "${project}/data"
 
 cd "$project"
@@ -13,6 +11,46 @@ cap mkdir "$outdir"
 
 set odbcmgr unixodbc
 
+#delimit ;
+clear;
+	
+/* Deeds query */
+odbc load,
+			dsn("SimbaAthena")
+			exec(`"
+			SELECT substring(trim(d."property zipcode"),1,5) as zip,
+				floor(d."recording date" / 10000) as year,
+				count(*) as sales
+			FROM (
+				SELECT DISTINCT q."property zipcode",
+					q."fips code",
+					q."apn unformatted",
+					q."apn sequence number",
+					q."recording date"
+				FROM corelogic.deed as q
+				WHERE
+					(q."property indicator code" in ('10', '11', '20', '22', '21'))
+					AND (q."pri cat code" IN ('A'))
+					AND (q."recording date" is not NULL)
+					AND (q."mortgage sequence number" is NULL)
+					AND (q."sale amount" > 0)
+				) as d
+			GROUP BY substring(trim(d."property zipcode"),1,5), floor(d."recording date" / 10000)
+			ORDER BY
+				substring(trim(d."property zipcode"),1,5),
+				floor(d."recording date" / 10000)
+		"');
+
+destring year, force replace;
+destring sales, force replace;
+
+collapse (sum) sales, by(zip year);
+sort zip year;
+
+save "${outdir}/deed_counts.dta", replace;
+
+
+/* Listings query */
 #delimit ;
 clear;
 
@@ -62,4 +100,10 @@ foreach suffix of local table_suffixes {;
 };
 
 rename cmas_zip5 zip;
+destring year, force replace;
+destring listings, force replace;
+
+collapse (sum) listings, by(zip year);
+sort zip year;
+
 save "${outdir}/listing_counts.dta", replace;
