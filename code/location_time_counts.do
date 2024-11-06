@@ -46,6 +46,12 @@ destring sales, force replace;
 
 collapse (sum) sales, by(zip year);
 sort zip year;
+keep if strlen(strtrim(zip)) == 5;
+drop if strpos(zip, "#") > 0;
+drop if strpos(zip, "@") > 0;
+drop if strpos(zip, "A") > 0;
+drop if strpos(zip, "C") > 0;
+drop if strpos(zip, "T") > 0;
 
 save "${outdir}/deed_counts.dta", replace;
 
@@ -105,5 +111,11 @@ destring listings, force replace;
 
 collapse (sum) listings, by(zip year);
 sort zip year;
+keep if strlen(strtrim(zip)) == 5;
+drop if strpos(zip, "#") > 0;
+drop if strpos(zip, "@") > 0;
+drop if strpos(zip, "A") > 0;
+drop if strpos(zip, "C") > 0;
+drop if strpos(zip, "T") > 0;
 
 save "${outdir}/listing_counts.dta", replace;
