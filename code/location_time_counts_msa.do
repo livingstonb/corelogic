@@ -13,13 +13,13 @@ set odbcmgr unixodbc
 
 #delimit ;
 clear;
-	
+
 /* Deeds query */
 odbc load,
 			dsn("SimbaAthena")
 			exec(`"
 			SELECT substring(trim(d."property zipcode"),1,5) as zip,
-				floor(d."recording date" / 100) as date,
+				floor(d."recording date" / 10000) as year,
 				count(*) as sales
 			FROM (
 				SELECT DISTINCT q."property zipcode",
@@ -35,16 +35,31 @@ odbc load,
 					AND (q."mortgage sequence number" is NULL)
 					AND (q."sale amount" > 0)
 				) as d
-			GROUP BY substring(trim(d."property zipcode"),1,5), floor(d."recording date" / 100)
+			INNER JOIN (
+				SELECT DISTINCT q."property zipcode",
+					q."fips code",
+					q."apn unformatted",
+					q."apn sequence number",
+					q."recording date"
+				FROM corelogic.deed as q
+				WHERE
+					(q."property indicator code" in ('10', '11', '20', '22', '21'))
+					AND (q."pri cat code" IN ('A'))
+					AND (q."recording date" is not NULL)
+					AND (q."mortgage sequence number" is NULL)
+					AND (q."sale amount" > 0)
+				) as p
+			GROUP BY substring(trim(d."property zipcode"),1,5), floor(d."recording date" / 10000)
 			ORDER BY
 				substring(trim(d."property zipcode"),1,5),
-				floor(d."recording date" / 100)
+				floor(d."recording date" / 10000)
 		"');
 
+destring year, force replace;
 destring sales, force replace;
 
-collapse (sum) sales, by(zip date);
-sort zip date;
+collapse (sum) sales, by(zip year);
+sort zip year;
 keep if strlen(strtrim(zip)) == 5;
 drop if strpos(zip, "#") > 0;
 drop if strpos(zip, "@") > 0;
@@ -68,22 +83,19 @@ foreach suffix of local table_suffixes {;
 
 	if "`suffix'" == "NONE" {;
 		local table quicksearch;
-		local yearexpr substring(d."fa_listdate",1,4);
-		local monthexpr substring(d."fa_listdate",6,2);
+		local year_start_position 1;
 	};
 	else {;
 		local table quicksearch_`suffix';
-		local yearexpr substring(d."fa_listdate",8,4);
-		local monthexpr substring(d."fa_listdate",1,3);
+		local year_start_position 8;
 	};
 
 	/* Query */
 	odbc load,
 			dsn("SimbaAthena")
 			exec(`"
-			SELECT d."cmas_zip5" as zip,
-				`yearexpr' as year,
-				`monthexpr' as month,
+			SELECT p."situs core based statistical area (cbsa)" as cbsa,
+				substring(d."fa_listdate",`year_start_position',4) as year,
 				count(*) as listings
 			FROM (
 				SELECT DISTINCT q."cmas_zip5",
@@ -97,36 +109,35 @@ foreach suffix of local table_suffixes {;
 					AND (q."fa_rent_sale_ind"='S')
 					AND (q."fa_listdate" != '')
 				) as d
-			GROUP BY d."cmas_zip5", `yearexpr', `monthexpr'
+			INNER JOIN (
+				SELECT DISTINCT ph."tax year",
+					ph."apn (parcel number unformatted)",
+					ph."apn sequence number",
+					ph."situs core based statistical area (cbsa)",
+					ph."fips code"
+				FROM corelogic2.property_history as ph
+				) as p
+			ON
+				(d."cmas_fips_code" = p."fips code")
+				AND (d."cmas_parcel_id" = p."apn (parcel number unformatted)")
+				AND (d."cmas_parcel_seq_nbr" = p."apn sequence number")
+				AND (cast(substring(d."fa_listdate",`year_start_position',4) as double) = p."tax year")
+			GROUP BY substring(d."fa_listdate",`year_start_position',4),
+				p."situs core based statistical area (cbsa)"
+			ORDER BY
+				p."situs core based statistical area (cbsa)",
+				substring(d."fa_listdate",`year_start_position',4)
 		"');
-	
-	sort zip year month;
-	
-	gen table = "`table'";
+		
 	append using "${outdir}/listing_counts.dta";
 	save "${outdir}/listing_counts.dta", replace;
 };
 
-gen date = year + "01" if month == "Jan";
-replace date = year + "02" if month == "Feb";
-replace date = year + "03" if month == "Mar";
-replace date = year + "04" if month == "Apr";
-replace date = year + "05" if month == "May";
-replace date = year + "06" if month == "Jun";
-replace date = year + "07" if month == "Jul";
-replace date = year + "08" if month == "Aug";
-replace date = year + "09" if month == "Sep";
-replace date = year + "10" if month == "Oct";
-replace date = year + "11" if month == "Nov";
-replace date = year + "12" if month == "Dec";
-replace date = year + month if table == "quicksearch";
-drop table;
-
 rename cmas_zip5 zip;
+destring year, force replace;
 destring listings, force replace;
 
-collapse (sum) listings, by(zip date);
-
+collapse (sum) listings, by(zip year);
 sort zip year;
 keep if strlen(strtrim(zip)) == 5;
 drop if strpos(zip, "#") > 0;
@@ -136,6 +147,3 @@ drop if strpos(zip, "C") > 0;
 drop if strpos(zip, "T") > 0;
 
 save "${outdir}/listing_counts.dta", replace;
-
-merge 1:1 zip date using "${outdir}/deed_counts.dta", nogen keep(1 2 3);
-save "${outdir}/merged_deed_listing_counts.dta", replace;
