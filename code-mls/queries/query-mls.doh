@@ -5,6 +5,7 @@ if "$singlecounty" != "" {;
 	local restrict_county AND (q."cmas_fips_code" in ('${singlecounty}'));
 };
 
+/*
 local date1 = "`yy'" + "-" + substr("`mmdd1'",1,2) + "-" + substr("`mmdd1'",3,2);
 local date2 = "`yy'" + "-" + substr("`mmdd2'",1,2) + "-" + substr("`mmdd2'",3,2);
 
@@ -24,6 +25,7 @@ if  (`yy'`mmdd1' < 20150401) {;
 else {;
 	local tax_table tax_`yy'_q`qq';
 };
+*/
 
 
 /*
@@ -35,23 +37,23 @@ local date2 = "'" + "`date2'" + "'";
 odbc load,
 		dsn("SimbaAthena")
 		exec(`"
-		SELECT DISTINCT
-			q."cmas_fips_code" as fips, 
-			q."cmas_parcel_id" as apn,
-			q."cmas_parcel_seq_nbr" as apn_seq,
-			q."fa_listdate",
-			min(q."addressstreetaddress"),
-			min(q."addressunitnumber"),
-			min(q."fa_propertytype"),
-			min(q."cmas_zip5"),
-			min(q."fa_listid"),
-			min(q."fa_originallistdate"),
-			min(q."fa_postdate"),
-			min(q."modificationtimestamp"),
-			min(q."fa_offmarketdate"),
-			min(q."fa_closedate"),
-			min(q."closedate"),
-			min(q."withdrawndate")
+		SELECT DISTINCT ON
+				(q."cmas_fips_code" as fips, 
+				q."cmas_parcel_id" as apn,
+				q."cmas_parcel_seq_nbr" as apn_seq,
+				q."fa_listdate")
+			q."addressstreetaddress",
+			q."addressunitnumber",
+			q."fa_propertytype",
+			q."cmas_zip5",
+			q."fa_listid",
+			q."fa_originallistdate",
+			q."fa_postdate",
+			q."modificationtimestamp",
+			q."fa_offmarketdate",
+			q."fa_closedate",
+			q."closedate",
+			q."withdrawndate"
 		FROM
 			"corelogic-mls".`quicksearch_table' as q
 		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP'))

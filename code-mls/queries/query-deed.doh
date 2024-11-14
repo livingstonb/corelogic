@@ -9,20 +9,20 @@ if "$singlecounty" != "" {;
 cap odbc load,
 		dsn("SimbaAthena")
 		exec(`"
-		SELECT DISTINCT
-			d."fips code" as fips,
-			d."apn (parcel number unformatted)" as apn,
-			d."apn sequence number" as apn_seq,
-			d."transaction batch date" as trans_batch_date,
-			d."transaction batch sequence number" as trans_batch_seq,
-			min(d."sale derived date") as sale_date,
-			min(d."sale derived recording date") as recording_date,
-			min(d."sale amount") as sale_amount,
-			min(d."new construction indicator"),
-			min(d."resale indicator"),
-			min(d."property indicator code - static"),
-			min(d."land use code - static"),
-			min(d."interfamily related indicator")
+		SELECT DISTINCT ON
+				(d."fips code" as fips,
+				d."apn (parcel number unformatted)" as apn,
+				d."apn sequence number" as apn_seq,
+				d."transaction batch date" as trans_batch_date,
+				d."transaction batch sequence number" as trans_batch_seq)
+			d."sale derived date" as sale_date,
+			d."sale derived recording date" as recording_date,
+			d."sale amount") as sale_amount,
+			d."new construction indicator",
+			d."resale indicator",
+			d."property indicator code - static",
+			d."land use code - static",
+			d."interfamily related indicator"
 		FROM
 			corelogic2.deed as d
 		WHERE (d."pri cat code" IN ('A'))
@@ -36,5 +36,6 @@ cap odbc load,
 			d."apn (parcel number unformatted)",
 			d."apn sequence number",
 			d."transaction batch date",
-			d."transaction batch sequence number"
+			d."transaction batch sequence number",
+			d."sale amount"
 	"');
