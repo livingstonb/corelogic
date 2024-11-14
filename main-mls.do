@@ -36,7 +36,7 @@ do "${codedir}/clean_mls.do"
 do "${codedir}/clean_deed.do"
 
 * append and standardize
-do "${codedir}/append_deed_mls.do"
+/* do "${codedir}/append_deed_mls.do" */
 
 
 /* append quarters

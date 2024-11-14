@@ -17,10 +17,13 @@ else if "`selected_query'" == "query-deed.doh" {;
 	save "`filename'", replace emptyok;
 };
 
-forvalues yy = 1993/2024 {;
-	forvalues qq = 1/4 {;
+/*
+forvalues yy = 2010/2024 {;
+	forvalues qq = 4/4 {;
 		clear;
+		*/
 		
+		/*
 		/* Beginning and end dates for the quarter */
 		if (`qq' == 1) {; local mmdd1 0101; local mmdd2 0331; };
 		else if (`qq' == 2) 	{; local mmdd1 0401; local mmdd2 0630;};
@@ -43,6 +46,7 @@ forvalues yy = 1993/2024 {;
 		else {;
 			local _s_ " ";
 		};
+		*/
 		
 		/* Query itself */
 		include "${codedir}/queries/`selected_query'";
@@ -52,18 +56,19 @@ forvalues yy = 1993/2024 {;
 		};
 		
 		/* These quarterly files will be appended later */
-		save "${tempdir}/data`yy'Q`qq'", emptyok replace;
-		append using "`filename'";
+		/*save "${tempdir}/data`yy'Q`qq'", emptyok replace;
+		append using "`filename'"; */
 		save "`filename'", replace emptyok;
 		
-		
+		/*
 	};
 };
+*/
 
 if "`selected_query'" == "query-mls.doh" {;
 	clear;
 	local mmdd 0101 0401 0701 1001;
-	forvalues yy = 2019/2022 {;
+	forvalues yy = 2012/2022 {;
 		foreach val of local mmdd {;
 			clear;
 			if `yy'`val' < 20190701 {;
@@ -72,11 +77,12 @@ if "`selected_query'" == "query-mls.doh" {;
 			else if `yy'`val' > 20220101 {;
 				continue, break;
 			};
+			*/
 			
 			local quicksearch_table quicksearch_`yy'`val';
 			include "${codedir}/queries/`selected_query'";
 			
-			append using "`filename'";
+			/* append using "`filename'"; */
 			save "`filename'", replace emptyok;
 		};
 	};

@@ -35,36 +35,28 @@ local date2 = "'" + "`date2'" + "'";
 odbc load,
 		dsn("SimbaAthena")
 		exec(`"
-		SELECT
-			q."cmas_parcel_id",
-			q."cmas_parcel_seq_nbr",
-			q."cmas_fips_code", 
-			q."listingid",
-			q."syspropertyid",
-			q."addressstateorprovince",
-			q."addresscountyorparish",
-			q."addressstreetaddress",
-			q."addressunitnumber",
-			q."fa_propertytype",
-			q."cmas_zip5",
+		SELECT DISTINCT
+			q."cmas_fips_code" as fips, 
+			q."cmas_parcel_id" as apn,
+			q."cmas_parcel_seq_nbr" as apn_seq,
 			q."fa_listdate",
-			q."fa_listid",
-			q."listdate",
-			q."fa_originallistdate",
-			q."originallistdate",
-			q."fa_postdate",
-			q."modificationtimestamp",
-			q."dom",
-			q."fa_offmarketdate",
-			q."fa_closedate",
-			q."closedate",
-			q."withdrawndate"
+			min(q."addressstreetaddress"),
+			min(q."addressunitnumber"),
+			min(q."fa_propertytype"),
+			min(q."cmas_zip5"),
+			min(q."fa_listid"),
+			min(q."fa_originallistdate"),
+			min(q."fa_postdate"),
+			min(q."modificationtimestamp"),
+			min(q."fa_offmarketdate"),
+			min(q."fa_closedate"),
+			min(q."closedate"),
+			min(q."withdrawndate")
 		FROM
 			"corelogic-mls".`quicksearch_table' as q
 		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP'))
 			AND (q."fa_rent_sale_ind"='S')
 			AND (q."fa_listdate" != '')
-			`restrict_date'
 			`restrict_county'
 		ORDER BY
 			q."fa_listdate",
