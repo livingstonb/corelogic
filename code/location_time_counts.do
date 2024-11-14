@@ -19,7 +19,7 @@ odbc load,
 			dsn("SimbaAthena")
 			exec(`"
 			SELECT substring(trim(d."property zipcode"),1,5) as zip,
-				floor(d."recording date" / 100) as date,
+				floor(d."sale date" / 100) as date,
 				count(*) as sales
 			FROM (
 				SELECT DISTINCT q."property zipcode",
@@ -35,10 +35,10 @@ odbc load,
 					AND (q."mortgage sequence number" is NULL)
 					AND (q."sale amount" > 0)
 				) as d
-			GROUP BY substring(trim(d."property zipcode"),1,5), floor(d."recording date" / 100)
+			GROUP BY substring(trim(d."property zipcode"),1,5), floor(d."sale date" / 100)
 			ORDER BY
 				substring(trim(d."property zipcode"),1,5),
-				floor(d."recording date" / 100)
+				floor(d."sale date" / 100)
 		"');
 
 destring sales, force replace;
@@ -122,12 +122,11 @@ replace date = year + "12" if month == "Dec";
 replace date = year + month if table == "quicksearch";
 drop table;
 
-rename cmas_zip5 zip;
 destring listings, force replace;
 
 collapse (sum) listings, by(zip date);
 
-sort zip year;
+sort zip date;
 keep if strlen(strtrim(zip)) == 5;
 drop if strpos(zip, "#") > 0;
 drop if strpos(zip, "@") > 0;
@@ -135,7 +134,16 @@ drop if strpos(zip, "A") > 0;
 drop if strpos(zip, "C") > 0;
 drop if strpos(zip, "T") > 0;
 
-save "${outdir}/listing_counts.dta", replace;
+drop if substr(zip, 4, 2) == "00";
+drop if substr(date, 5, 2) == "00";
+drop if substr(date, 1, 2) == "18";
+drop if substr(date, 1, 3) == "190";
 
+gen year = substr(date, 1, 4);
+gen month = substr(date, 5, 2);
+replace date = year + "/" + month;
+
+save "${outdir}/listing_counts.dta", replace;
+#delimit ;
 merge 1:1 zip date using "${outdir}/deed_counts.dta", nogen keep(1 2 3);
 save "${outdir}/merged_deed_listing_counts.dta", replace;
