@@ -37,34 +37,38 @@ local date2 = "'" + "`date2'" + "'";
 odbc load,
 		dsn("SimbaAthena")
 		exec(`"
-		SELECT DISTINCT ON
-				(q."cmas_fips_code" as fips, 
-				q."cmas_parcel_id" as apn,
-				q."cmas_parcel_seq_nbr" as apn_seq,
-				q."fa_listdate")
-			q."addressstreetaddress",
-			q."addressunitnumber",
-			q."fa_propertytype",
-			q."cmas_zip5",
-			q."fa_listid",
-			q."fa_originallistdate",
-			q."fa_postdate",
-			q."modificationtimestamp",
-			q."fa_offmarketdate",
-			q."fa_closedate",
-			q."closedate",
-			q."withdrawndate"
+		SELECT
+			q."cmas_fips_code" as fips, 
+			q."cmas_parcel_id" as apn,
+			q."cmas_parcel_seq_nbr" as apn_seq,
+			q."fa_listdate",
+			max(q."addressstreetaddress"),
+			max(q."fa_propertytype"),
+			max(q."cmas_zip5"),
+			max(q."fa_listid"),
+			max(q."fa_originallistdate"),
+			max(q."fa_postdate"),
+			max(q."modificationtimestamp"),
+			max(q."fa_offmarketdate"),
+			max(q."fa_closedate"),
+			max(q."closedate"),
+			max(q."withdrawndate")
 		FROM
 			"corelogic-mls".`quicksearch_table' as q
 		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP'))
 			AND (q."fa_rent_sale_ind"='S')
 			AND (q."fa_listdate" != '')
 			`restrict_county'
-		ORDER BY
-			q."fa_listdate",
+		GROUP BY
 			q."cmas_fips_code",
 			q."cmas_parcel_id",
 			q."cmas_parcel_seq_nbr"
+			q."fa_listdate",
+		ORDER BY
+			q."cmas_fips_code",
+			q."cmas_parcel_id",
+			q."cmas_parcel_seq_nbr"
+			q."fa_listdate",
 	"');
 	
 cap gen table = "`quicksearch_table'";
