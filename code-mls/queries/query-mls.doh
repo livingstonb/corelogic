@@ -62,13 +62,13 @@ odbc load,
 		GROUP BY
 			q."cmas_fips_code",
 			q."cmas_parcel_id",
-			q."cmas_parcel_seq_nbr"
-			q."fa_listdate",
+			q."cmas_parcel_seq_nbr",
+			q."fa_listdate"
 		ORDER BY
 			q."cmas_fips_code",
 			q."cmas_parcel_id",
-			q."cmas_parcel_seq_nbr"
-			q."fa_listdate",
+			q."cmas_parcel_seq_nbr",
+			q."fa_listdate"
 	"');
 	
 cap gen table = "`quicksearch_table'";

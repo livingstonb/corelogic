@@ -24,9 +24,8 @@ cap odbc load,
 			max(d."land use code - static"),
 			max(d."interfamily related indicator")
 		FROM
-			corelogic2.deed as d
-		WHERE (d."pri cat code" IN ('A'))
-			AND (d."sale derived recording date" BETWEEN `yy'`mmdd1' AND `yy'`mmdd2')
+			corelogic2.ownertransfer as d
+		WHERE (d."primary category code" IN ('A'))
 			AND (d."property indicator code - static" in ('10', '11', '20', '22', '21'))
 			AND (d."sale amount" > 0)
 			`restrict_county'
@@ -35,12 +34,11 @@ cap odbc load,
 			d."apn (parcel number unformatted)",
 			d."apn sequence number",
 			d."transaction batch date",
-			d."transaction batch sequence number",
+			d."transaction batch sequence number"
 		ORDER BY
 			d."fips code",
 			d."apn (parcel number unformatted)",
 			d."apn sequence number",
 			d."transaction batch date",
-			d."transaction batch sequence number",
-			d."sale amount"
+			d."transaction batch sequence number"
 	"');
