@@ -38,3 +38,5 @@ cap odbc load,
 			p."apn sequence number",
 			p."year"
 	"');
+
+cap destring year, force replace;

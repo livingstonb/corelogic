@@ -36,8 +36,9 @@ do "${codedir}/corelogic_legacy_query.do" "query-assessor.doh"
 do "${codedir}/clean_mls.do"
 do "${codedir}/clean_deed.do"
 
-* append and standardize
+* append and standardize (append does not save new file, keeps in data)
 do "${codedir}/append_deed_mls.do"
+do "${codedir}/merge_in_assessor.do"
 
 
 /* append quarters

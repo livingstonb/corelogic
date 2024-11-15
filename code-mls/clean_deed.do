@@ -1,7 +1,7 @@
 
 #delimit ;
 
-use "${tempdir}/data_deed.dta", clear;
+use "${tempdir}/data_deed_${singlecounty}.dta", clear;
 
 rename recording_date date;
 
@@ -10,5 +10,6 @@ drop date;
 gen ddate = date(strdate, "YMD");
 rename ddate date;
 format %td date;
+drop strdate;
 
 save "${tempdir}/data_deed_${singlecounty}.dta", replace;
