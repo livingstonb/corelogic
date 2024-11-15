@@ -24,4 +24,4 @@ rename ddate date;
 
 drop if missing(date);
 
-save "${tempdir}/data_mls_cleaned.dta", replace;
+save "${tempdir}/data_mls_${singlecounty}", replace;

@@ -11,4 +11,4 @@ gen ddate = date(strdate, "YMD");
 rename ddate date;
 format %td date;
 
-save "${tempdir}/data_deed_cleaned.dta", replace;
+save "${tempdir}/data_deed_${singlecounty}.dta", replace;

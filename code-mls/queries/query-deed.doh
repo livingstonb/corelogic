@@ -18,11 +18,15 @@ cap odbc load,
 			max(d."sale derived date") as sale_date,
 			max(d."sale derived recording date") as recording_date,
 			max(d."sale amount") as sale_amount,
-			max(d."new construction indicator"),
-			max(d."resale indicator"),
-			max(d."property indicator code - static"),
-			max(d."land use code - static"),
-			max(d."interfamily related indicator")
+			max(d."new construction indicator") as new_construction_ind,
+			max(d."resale indicator") as resale_ind,
+			max(d."land use code - static") as land_use_code,
+			max(d."interfamily related indicator") as interfamily,
+			max(d."buyer 1 full name") as buyer1,
+			max(d."buyer 2 full name") as buyer2,
+			max(d."buyer 3 full name") as buyer3,
+			max(d."seller 1 full name") as seller1,
+			max(d."seller 2 full name") as seller2
 		FROM
 			corelogic2.ownertransfer as d
 		WHERE (d."primary category code" IN ('A'))

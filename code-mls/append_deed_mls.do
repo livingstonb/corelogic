@@ -1,10 +1,10 @@
 
 #delimit ;
 
-use "${tempdir}/data_deed_cleaned.dta", clear;
+use "${tempdir}/data_deed_${singlecounty}.dta", clear;
 gen source = "deed";
 
-append using  "${tempdir}/data_mls_cleaned.dta";
+append using  "${tempdir}/data_mls_${singlecounty}.dta";
 replace source = "mls" if missing(source);
 
 /* Date */
