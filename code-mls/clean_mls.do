@@ -23,5 +23,6 @@ drop date strdate;
 rename ddate date;
 
 drop if missing(date);
+drop table;
 
 save "${tempdir}/data_mls_${singlecounty}", replace;

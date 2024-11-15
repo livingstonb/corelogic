@@ -86,8 +86,8 @@ if "`selected_query'" == "query-mls.doh" {;
 			local quicksearch_table quicksearch_`yy'`val';
 			include "${codedir}/queries/`selected_query'";
 			
-			/* append using "`filename'"; */
-			save "`filename'", replace emptyok;
+			append using "`filename'";
+			save "`filename'", replace;
 		};
 	};
 };

@@ -2,10 +2,11 @@
 #delimit ;
 
 if "$singlecounty" != "" {;
-	local restrict_county AND (d."fips code" in ('${singlecounty}'));
+	local restrict_county AND (p."fips code" in ('${singlecounty}'));
 };
 
 /* Query */
+clear;
 cap odbc load,
 		dsn("SimbaAthena")
 		exec(`"

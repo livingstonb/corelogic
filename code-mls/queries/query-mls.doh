@@ -42,15 +42,14 @@ odbc load,
 			q."cmas_parcel_id" as apn,
 			q."cmas_parcel_seq_nbr" as apn_seq,
 			q."fa_listdate" as list_date,
-			max(q."fa_propertytype"),
-			max(q."fa_listid"),
-			max(q."fa_originallistdate"),
-			max(q."fa_postdate"),
-			max(q."modificationtimestamp"),
-			max(q."fa_offmarketdate"),
-			max(q."fa_closedate"),
-			max(q."closedate"),
-			max(q."withdrawndate")
+			max(q."fa_propertytype") as mls_proptype,
+			max(q."fa_listid") as listing_id,
+			max(q."fa_originallistdate") as listing_date,
+			max(q."fa_postdate") as listing_post_date,
+			max(q."modificationtimestamp") as listing_moddate,
+			max(q."fa_offmarketdate") as listing_offmarketdate,
+			max(q."fa_closedate") as listing_closedate,
+			max(q."withdrawndate") as listing_withdrawndate
 		FROM
 			"corelogic-mls".`quicksearch_table' as q
 		WHERE (q."fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP'))
