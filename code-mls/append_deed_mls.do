@@ -11,7 +11,7 @@ replace source = "mls" if missing(source);
 /* Drop */ #delimit ;
 drop trans_batch* new_const* resale* interfam* mls_proptype listing_id
 	listing_post_date listing_offmarketdate listing_moddate listing_closedate
-	listing_withdrawndate listing_date;
+	listing_withdrawndate;
 
 /* Date */
 gen year = year(date);
@@ -22,14 +22,6 @@ format %tq qdate;
 */
 drop if year == 1800;
 
-sort date;
-
-/* Save */
-save "${tempdir}/deed_mls_combined.dta", replace;
-
-#delimit ;
-/* Standardize */
-use "${tempdir}/deed_mls_combined.dta", clear;
 
 /* Try other housing definitions
 drop if inlist(property_indicator_code, "21", "22");
@@ -62,6 +54,7 @@ replace newlisting = 1 if (source == "deed") & prev_deed;
 bysort fips apn apn_seq (date): replace newlisting = 1 if (source == "mls") & prev_mls &
 	(date - date[_n-1] > ${new_listing_cutoff});
 replace newlisting = 0 if missing(newlisting);
+drop prev_mls prev_deed;
 
 bysort fips apn apn_seq (date): gen listing_group = sum(newlisting);
 
@@ -74,4 +67,4 @@ rename newlisting new_listings;
 drop if missing(mdate);
 */
 
-save "${outdir}/time_series_corelogic.dta", replace;
+/* save "${outdir}/time_series_corelogic.dta", replace; */
