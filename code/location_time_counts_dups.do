@@ -44,7 +44,13 @@ odbc load,
 destring sales, force replace;
 
 collapse (sum) sales, by(zip date);
-sort zip date;
+gen year = substr(date, 1, 4);
+gen month = substr(date, 5, 2);
+destring year month, force replace;
+drop if month == 0;
+gen mdate = ym(year, month);
+format %tm mdate;
+
 keep if strlen(strtrim(zip)) == 5;
 drop if strpos(zip, "#") > 0;
 drop if strpos(zip, "@") > 0;
@@ -125,14 +131,12 @@ odbc load,
 
 sort zip year month;
 
-gen table = "quicksearch";
 /* save "${outdir}/listing_counts.dta", replace */;
 
 destring listings, force replace;
 
 collapse (sum) listings, by(zip year month);
 
-sort zip date;
 keep if strlen(strtrim(zip)) == 5;
 drop if strpos(zip, "#") > 0;
 drop if strpos(zip, "@") > 0;
@@ -154,5 +158,6 @@ drop if year > 2025;
 save "${outdir}/listing_counts.dta", replace;
 
 #delimit ;
-merge 1:1 zip date using "${outdir}/deed_counts.dta", nogen keep(1 2 3);
+merge 1:1 zip year month using "${outdir}/deed_counts.dta", nogen keep(1 2 3);
+sort zip year month;
 save "${outdir}/merged_deed_listing_counts.dta", replace;
