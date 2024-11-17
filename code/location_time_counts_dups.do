@@ -60,7 +60,7 @@ local suffixes 20190701 20191001 20200101 20200401 20200701 20201001
 	20210101 20210401 20210701 20211001 20220101;
 	
 local union_subqueries;
-foreach suffix of suffixes {;
+foreach suffix of local suffixes {;
 	local union_subqueries `union_subqueries'
 	UNION
 	(SELECT DISTINCT
@@ -130,7 +130,7 @@ gen table = "quicksearch";
 
 destring listings, force replace;
 
-collapse (sum) listings, by(zip date);
+collapse (sum) listings, by(zip year month);
 
 sort zip date;
 keep if strlen(strtrim(zip)) == 5;
@@ -141,10 +141,10 @@ drop if strpos(zip, "C") > 0;
 drop if strpos(zip, "T") > 0;
 
 drop if substr(zip, 4, 2) == "00";
-drop if substr(date, 5, 2) == "00";
+gen date = year + month;
 
-replace date = year + "/" + month;
 destring year month, force replace;
+drop if month == 0;
 gen mdate = ym(year, month);
 format %tm mdate;
 
@@ -156,4 +156,3 @@ save "${outdir}/listing_counts.dta", replace;
 #delimit ;
 merge 1:1 zip date using "${outdir}/deed_counts.dta", nogen keep(1 2 3);
 save "${outdir}/merged_deed_listing_counts.dta", replace;
-*/
