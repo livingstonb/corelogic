@@ -1,5 +1,9 @@
 
-global project "~/charlie-project/corelogic"
+/* Same as previous code but taking into account duplicates from quicksearch
+updates, to address spike around 2020 */
+
+// global project "~/charlie-project/corelogic"
+global project "~/Dropbox/NU/Spring 2024/RA/corelogic"
 global codedir "${project}/code"
 global tempdir "${project}/temp"
 global outdir "${project}/output"
@@ -160,4 +164,21 @@ save "${outdir}/listing_counts.dta", replace;
 #delimit ;
 merge 1:1 zip year month using "${outdir}/deed_counts.dta", nogen keep(1 2 3);
 sort zip year month;
-save "${outdir}/merged_deed_listing_counts.dta", replace;
+save "${outdir}/monthly_counts_zip.dta", replace;
+
+/* Merge with USPS crosswalk for zip-CBSA */
+#delimit ;
+import excel "${datadir}/ZIP_CBSA_032020.xlsx", clear firstrow;
+keep if TOT_RATIO > 0.9;
+keep ZIP CBSA;
+rename ZIP zip;
+rename CBSA cbsa;
+
+tempfile zip_cbsa_cwalk;
+save "`zip_cbsa_cwalk'", replace;
+
+use "${outdir}/merged_deed_listing_counts_11_17.dta", clear;
+merge m:1 zip using "`zip_cbsa_cwalk'", nogen keep(1 2 3);
+rename cbsa msa;
+collapse (sum) listings sales, by(msa mdate);
+save "${outdir}/monthly_counts_msa.dta", replace;
