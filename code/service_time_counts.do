@@ -120,9 +120,8 @@ drop if year > 2025;
 
 /* Merge in MSA */
 merge m:1 zip using "`zip_cbsa_cwalk'", nogen keep(1 2 3);
-collapse (sum) listings, by(msa mdate service);
-sort msa service mdate;
 
+sort zip service mdate;
 destring zip, force replace;
 
 save "${outdir}/listing_service_counts.dta", replace;
