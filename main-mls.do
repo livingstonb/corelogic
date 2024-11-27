@@ -27,7 +27,7 @@ set trace on
 set tracedepth 1
 */
 
-* main query, listings (mls)
+* main queries
 do "${codedir}/corelogic_legacy_query.do" "query-mls.doh" `tfirst' `tlast'
 do "${codedir}/corelogic_legacy_query.do" "query-deed.doh" `tfirst' `tlast'
 do "${codedir}/corelogic_legacy_query.do" "query-assessor.doh"

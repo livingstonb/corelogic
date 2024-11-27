@@ -1,12 +1,10 @@
 clear
- use "${outdir}/merged_deed_listing_counts_11_17.dta"
-//  destring year month, replace
+ use "${outdir}/monthly_counts_zip_11_26.dta"
 drop date
 rename mdate date
- destring zip, replace force
-// drop date
-// gen date = ym(year, month)
-// format date %tm
+drop if date < ym(1970, 1)
+
+destring zip, replace force
 tsset zip date
 
 tssmooth ma listings_ma = listings, window(6 1 5)
@@ -33,6 +31,13 @@ egen max_listings = max(listings_ma), by(zip)
 
 gen line_bad_listings = (date > max_bad_listings) * max_listings
 gen line_bad_sales = (date > max_bad_sales) * max_sales
+
+gen temp_sales_gt_listings = sales > listings if !missing(sales, listings) ///
+	& (date > max_bad_listings) & (date > max_bad_sales)
+// egen NN = count(temp_sales_gt_listings), by(zip)
+// replace temp_sales_gt_listings = temp_sales_gt_listings / NN
+egen share_sales_gt_listings = mean(temp_sales_gt_listings), by(zip)
+drop temp_sales_gt_listings
 
 /*
 44022
@@ -64,6 +69,16 @@ cap putpdf clear;
 putpdf begin;
 
 foreach zip of local zips {;
+
+	quietly sum share_sales_gt_listings if zip == `zip';
+	local share_bad = r(max);
+	if 	`share_bad' > 0.85 {;
+		local dropped ", DROPPED";
+	};
+	else {;
+		local dropped;
+	};
+	
 	
 	twoway (line listings_ma sales_ma line_bad_listings line_bad_sales date
 		if zip == `zip' & date > ym(1985,1),
@@ -72,7 +87,7 @@ foreach zip of local zips {;
 				label(3 "Listings Good") label(4 "Sales Good") position(6) rows(2))
 			xtitle("") ylabel(, grid ang(h)) tlabel(1990m1 2000m1 2010m1 2020m1)
 			tmtick(1990m1 1995m1 2000m1 2005m1 2010m1 2015m1 2020m1, grid)
-			title("{bf:`zip'}", size(medium)) graphregion(color(white))
+			title("{bf:`zip' (sale > list = `share_bad')`dropped'}", size(medium)) graphregion(color(white))
 			plotregion(margin(1 1 1 1) lcolor(black)) ),
 			name("p`counter'")
 			;

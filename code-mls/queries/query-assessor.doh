@@ -24,7 +24,7 @@ cap odbc load,
 			max(p."land use code") as land_use_code,
 			max(p."situs zip code") as zip
 		FROM
-			corelogic2.property_history as p
+			corelogic.deed as p
 		WHERE (p."property indicator code" in ('10', '11', '20', '22', '21'))
 			`restrict_county'
 		GROUP BY

@@ -1,8 +1,9 @@
 clear
 
 // global project "/Users/brianlivingston/Dropbox/NU/Spring 2024/RA/corelogic"
+global project
 
-global project "~/charlie-project/corelogic"
+// global project "~/charlie-project/corelogic"
 global codedir "${project}/code"
 global tempdir "${project}/temp"
 global outdir "${project}/output"
