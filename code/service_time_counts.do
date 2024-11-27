@@ -95,7 +95,7 @@ odbc load,
 				)
 			`union_subqueries'
 			) as qq
-		GROUP BY qq."cmas_zip5", service, year, month
+		GROUP BY qq."cmas_zip5", listingservicename, year, month
 	"');
 	
 cap destring listings, force replace;
@@ -106,9 +106,8 @@ drop if strpos(zip, "@") > 0;
 drop if strpos(zip, "A") > 0;
 drop if strpos(zip, "C") > 0;
 drop if strpos(zip, "T") > 0;
-destring zip, force replace;
+drop if substr(zip, 4, 2) == "00" | missing(zip);
 
-drop if substr(zip, 4, 2) == "00";
 gen date = year + month;
 
 destring year month, force replace;
@@ -123,4 +122,7 @@ drop if year > 2025;
 merge m:1 zip using "`zip_cbsa_cwalk'", nogen keep(1 2 3);
 collapse (sum) listings, by(msa mdate service);
 sort msa service mdate;
+
+destring zip, force replace;
+
 save "${outdir}/listing_service_counts.dta", replace;
