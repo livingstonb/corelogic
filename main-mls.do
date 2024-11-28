@@ -16,8 +16,6 @@ cap mkdir "$outdir"
 set odbcmgr unixodbc
 
 * config
-local tfirst 20000101
-local tlast 20240630
 global datevar recording
 global singlecounty "06067"
 global new_listing_cutoff 180
@@ -27,10 +25,21 @@ set trace on
 set tracedepth 1
 */
 
-* main queries
-do "${codedir}/corelogic_legacy_query.do" "query-mls.doh" `tfirst' `tlast'
-do "${codedir}/corelogic_legacy_query.do" "query-deed.doh" `tfirst' `tlast'
-do "${codedir}/corelogic_legacy_query.do" "query-assessor.doh"
+/* Main queries */
+#delimit ;
+clear;
+local filename "${tempdir}/data_final_${singlecounty}.dta";
+save "`filename'", replace emptyok;
+/* Loop over all quarters */
+forvalues yy = 2016/2016 {;
+forvalues qq = 4/4 {;
+	clear;
+	do "${codedir}/corelogic_legacy_query.do" "query-mls.doh" `yy' `qq';
+	append using "`filename'";
+	save "`filename'", replace;
+};
+};
+#delimit cr
 
 * clean
 do "${codedir}/clean_mls.do"
