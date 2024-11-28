@@ -41,6 +41,8 @@ forvalues qq = 4/4 {;
 };
 #delimit cr
 
+assert 0
+
 * clean
 do "${codedir}/clean_mls.do"
 do "${codedir}/clean_deed.do"
