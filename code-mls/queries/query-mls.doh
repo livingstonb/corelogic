@@ -107,7 +107,7 @@ odbc load,
 							ORDER BY
 								listing_id DESC
 						) as rownum
-				FROM
+				FROM (
 					(SELECT
 						cmas_fips_code as fips, 
 						cmas_parcel_id as apn,
@@ -128,13 +128,14 @@ odbc load,
 						AND (fa_rent_sale_ind='S')
 						AND (fa_listdate != '')
 					)
-				`UNION_MLS_SUBQUERIES'
+				`UNION_MLS_SUBQUERIES' )
 			),
 			
 			mls AS (
 				SELECT *
 				FROM raw_mls
 				WHERE (rownum = 1)
+					AND (month in `mm')
 			),
 			
 			raw_deed AS (
@@ -181,17 +182,26 @@ odbc load,
 				WHERE (rownum = 1)
 			)
 
-		SELECT *
-		FROM mls
+		SELECT 	m.fips,
+				m.apn,
+				m.apn_seq,
+				m.year,
+				m.month,
+				m.list_date,
+				m.zip,
+				m.mls_proptype,
+				t.land_footage,
+				t.nbaths
+		FROM mls as mls
 		LEFT JOIN tax
 			ON
 				(mls.fips = tax.fips)
 				AND (mls.apn = tax.apn)
-				AND (mls.apn_seq = tax.apn_seq)
+				AND (cast(mls.apn_seq as varchar) = substring(tax.apn_seq,3,1))
 		ORDER BY
-			fips,
-			apn,
-			apn_seq,
+			mls.fips,
+			mls.apn,
+			mls.apn_seq,
 			mls.list_date
 	"');
 	
