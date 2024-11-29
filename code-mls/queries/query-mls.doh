@@ -61,7 +61,7 @@ foreach suffix of local suffixes {;
 			) as rownum
 	FROM "corelogic-mls".quicksearch_`suffix' as q
 	WHERE 
-		(cmas_fips_code = '${singlecounty}')
+		(q."cmas_fips_code" = '${singlecounty}')
 		AND (substring(trim(q."fa_listdate"), 1, 4) = '`yy'')
 		AND (substring(trim(q."fa_listdate"), 6, 2) in `mm')
 		AND (q."fa_propertytype" in `mls_proptype_selections')
@@ -97,7 +97,7 @@ odbc load,
 						) as rownum
 				FROM corelogic.tax_`yy'_q`qq'
 				WHERE
-					(cmas_fips_code = '${singlecounty}')
+					("fips code" = '${singlecounty}')
 			),
 			
 			tax AS (
@@ -128,7 +128,7 @@ odbc load,
 						fa_listid as listing_id,
 						fa_rent_sale_ind as rent_sale_ind,
 						substring(trim("fa_listdate"), 1, 4) as year,
-						substring(trim("fa_listdate"), 6, 2) as month,
+						substring(trim("fa_listdate"), 6, 2) as month
 					FROM "corelogic-mls".quicksearch
 					WHERE
 						(cmas_fips_code = '${singlecounty}')
@@ -180,7 +180,7 @@ odbc load,
 				WHERE ("fips code" = '${singlecounty}')
 					AND (substring("sale derived recording date", 1, 4) = '`yy'')
 					AND (substring("sale derived recording date", 5, 2) in `mm')
-					AND ("primary category code" IN ('A'))
+					AND ("primary category code" in ('A'))
 					AND ("property indicator code - static" in ('10', '11', '20', '22', '21'))
 					AND ("sale amount" > 0)
 			),
