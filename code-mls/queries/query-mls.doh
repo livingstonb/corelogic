@@ -27,7 +27,7 @@ foreach suffix of local suffixes {;
 	local UNION_MLS_SUBQUERIES `UNION_MLS_SUBQUERIES'
 	UNION
 	(SELECT
-		CASE substring(q."fa_listdate",1,3)
+		CASE substring(fa_listdate,1,3)
 			WHEN 'Jan' THEN '01'
 			WHEN 'Feb' THEN '02'
 			WHEN 'Mar' THEN '03'
@@ -41,32 +41,31 @@ foreach suffix of local suffixes {;
 			WHEN 'Nov' THEN '11'
 			WHEN 'Dec' THEN '12'
 		END as month,
-		substring(q."fa_listdate",8,4) as year,
-		q."cmas_fips_code" as fips,
-		q."cmas_parcel_id" as apn,
-		q."cmas_parcel_seq_nbr" as apn_seq,
-		q."fa_listdate" as list_date,
-		q."fa_propertytype" as mls_proptype,
-		q."fa_listid" as listing_id,
-		q."fa_rent_sale_ind" as rent_sale_ind,
-		q."cmas_zip5" as zip,
+		substring(fa_listdate,8,4) as year,
+		cmas_fips_code as fips,
+		cmas_parcel_id as apn,
+		cmas_parcel_seq_nbr as apn_seq,
+		fa_listdate as list_date,
+		fa_propertytype as mls_proptype,
+		fa_listid as listing_id,
+		fa_rent_sale_ind as rent_sale_ind,
+		cmas_zip5 as zip,
 		ROW_NUMBER() OVER
 			(	PARTITION BY
-					q."cmas_fips_code",
-					q."cmas_parcel_id",
-					q."cmas_parcel_seq_nbr",
-					q."fa_listdate"
+					cmas_fips_code,
+					cmas_parcel_id,
+					cmas_parcel_seq_nbr,
+					fa_listdate
 				ORDER BY
-					q."fa_listid" DESC
+					fa_listid DESC
 			) as rownum
-	FROM "corelogic-mls".quicksearch_`suffix' as q
+	FROM "corelogic-mls".quicksearch_`suffix'
 	WHERE 
-		(q."cmas_fips_code" = '${singlecounty}')
-		AND (substring(trim(q."fa_listdate"), 1, 4) = '`yy'')
-		AND (substring(trim(q."fa_listdate"), 6, 2) in `mm')
-		AND (q."fa_propertytype" in `mls_proptype_selections')
-		AND (q."fa_rent_sale_ind"='S')
-		AND (q."fa_listdate" != '')
+		(cmas_fips_code = '${singlecounty}')
+		AND (substring(trim(fa_listdate), 8, 4) = '`yy'')
+		AND (fa_propertytype in `mls_proptype_selections')
+		AND (fa_rent_sale_ind='S')
+		AND (fa_listdate != '')
 		);
 };
 /*
@@ -110,12 +109,12 @@ odbc load,
 				SELECT *,
 					ROW_NUMBER() OVER
 						(	PARTITION BY
-								cmas_fips_code,
-								cmas_parcel_id,
-								cmas_parcel_seq_nbr,
-								fa_listdate
+								fips,
+								apn,
+								apn_seq,
+								list_date
 							ORDER BY
-								fa_listid DESC
+								listing_id DESC
 						) as rownum
 				FROM
 					(SELECT
@@ -127,16 +126,16 @@ odbc load,
 						fa_propertytype as mls_proptype,
 						fa_listid as listing_id,
 						fa_rent_sale_ind as rent_sale_ind,
-						substring(trim("fa_listdate"), 1, 4) as year,
-						substring(trim("fa_listdate"), 6, 2) as month
+						substring(trim(fa_listdate), 1, 4) as year,
+						cast(substring(fa_listdate,6,2) as varchar) as month
 					FROM "corelogic-mls".quicksearch
 					WHERE
 						(cmas_fips_code = '${singlecounty}')
-						AND (substring(trim("fa_listdate"), 1, 4) = '`yy'')
-						AND (substring(trim("fa_listdate"), 6, 2) in `mm')
-						AND (mls_proptype in `mls_proptype_selections')
-						AND (rent_sale_ind='S')
-						AND (list_date != '')
+						AND (substring(trim(fa_listdate), 1, 4) = '`yy'')
+						AND (cast(substring(fa_listdate,6,2) as varchar) in `mm')
+						AND (fa_propertytype in `mls_proptype_selections')
+						AND (fa_rent_sale_ind='S')
+						AND (fa_listdate != '')
 					)
 				`UNION_MLS_SUBQUERIES'
 			),
