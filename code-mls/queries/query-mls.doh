@@ -27,6 +27,10 @@ foreach suffix of local suffixes {;
 	local UNION_MLS_SUBQUERIES `UNION_MLS_SUBQUERIES'
 	UNION
 	(SELECT
+		cmas_fips_code as fips,
+		cmas_parcel_id as apn,
+		cmas_parcel_seq_nbr as apn_seq,
+		substring(fa_listdate,8,4) as year,
 		CASE substring(fa_listdate,1,3)
 			WHEN 'Jan' THEN '01'
 			WHEN 'Feb' THEN '02'
@@ -41,28 +45,15 @@ foreach suffix of local suffixes {;
 			WHEN 'Nov' THEN '11'
 			WHEN 'Dec' THEN '12'
 		END as month,
-		substring(fa_listdate,8,4) as year,
-		cmas_fips_code as fips,
-		cmas_parcel_id as apn,
-		cmas_parcel_seq_nbr as apn_seq,
 		fa_listdate as list_date,
+		cmas_zip5 as zip,
 		fa_propertytype as mls_proptype,
 		fa_listid as listing_id,
-		fa_rent_sale_ind as rent_sale_ind,
-		cmas_zip5 as zip,
-		ROW_NUMBER() OVER
-			(	PARTITION BY
-					cmas_fips_code,
-					cmas_parcel_id,
-					cmas_parcel_seq_nbr,
-					fa_listdate
-				ORDER BY
-					fa_listid DESC
-			) as rownum
+		fa_rent_sale_ind as rent_sale_ind
 	FROM "corelogic-mls".quicksearch_`suffix'
 	WHERE 
 		(cmas_fips_code = '${singlecounty}')
-		AND (substring(trim(fa_listdate), 8, 4) = '`yy'')
+		AND (substring(fa_listdate, 8, 4) = '`yy'')
 		AND (fa_propertytype in `mls_proptype_selections')
 		AND (fa_rent_sale_ind='S')
 		AND (fa_listdate != '')
@@ -121,13 +112,13 @@ odbc load,
 						cmas_fips_code as fips, 
 						cmas_parcel_id as apn,
 						cmas_parcel_seq_nbr as apn_seq,
-						cmas_zip5 as zip,
+						substring(trim(fa_listdate), 1, 4) as year,
+						cast(substring(fa_listdate,6,2) as varchar) as month,
 						fa_listdate as list_date,
+						cmas_zip5 as zip,
 						fa_propertytype as mls_proptype,
 						fa_listid as listing_id,
-						fa_rent_sale_ind as rent_sale_ind,
-						substring(trim(fa_listdate), 1, 4) as year,
-						cast(substring(fa_listdate,6,2) as varchar) as month
+						fa_rent_sale_ind as rent_sale_ind
 					FROM "corelogic-mls".quicksearch
 					WHERE
 						(cmas_fips_code = '${singlecounty}')
