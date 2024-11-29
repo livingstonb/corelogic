@@ -49,7 +49,7 @@ foreach suffix of local suffixes {;
 		q."fa_propertytype" as mls_proptype,
 		q."fa_listid" as listing_id,
 		q."fa_rent_sale_ind" as rent_sale_ind,
-		q."cmas_zip5" as zip
+		q."cmas_zip5" as zip,
 		ROW_NUMBER() OVER
 			(	PARTITION BY
 					q."cmas_fips_code",
@@ -60,8 +60,11 @@ foreach suffix of local suffixes {;
 					q."fa_listid" DESC
 			) as rownum
 	FROM "corelogic-mls".quicksearch_`suffix' as q
-	WHERE (rownum = 1)
-		(q."fa_propertytype" in `mls_proptype_selections')
+	WHERE 
+		(cmas_fips_code = '${singlecounty}')
+		AND (substring(trim(q."fa_listdate"), 1, 4) = '`yy'')
+		AND (substring(trim(q."fa_listdate"), 6, 2) in `mm')
+		AND (q."fa_propertytype" in `mls_proptype_selections')
 		AND (q."fa_rent_sale_ind"='S')
 		AND (q."fa_listdate" != '')
 		);
@@ -77,13 +80,13 @@ odbc load,
 		
 		WITH
 
-			tax AS (
+			raw_tax AS (
 				SELECT
 					"fips code" as fips,
 					"apn unformatted" as apn,
 					"apn sequence number" as apn_seq,
 					"land square footage" as land_footage,
-					"total baths calculated" as nbaths
+					"total baths calculated" as nbaths,
 					ROW_NUMBER() OVER
 						(	PARTITION BY
 								"fips code",
@@ -93,40 +96,17 @@ odbc load,
 								"land square footage" DESC
 						) as rownum
 				FROM corelogic.tax_`yy'_q`qq'
+				WHERE
+					(cmas_fips_code = '${singlecounty}')
+			),
+			
+			tax AS (
+				SELECT *
+				FROM raw_tax
 				WHERE (rownum = 1)
 			),
 			
 			raw_mls AS (
-				(SELECT
-					cmas_fips_code as fips, 
-					cmas_parcel_id as apn,
-					cmas_parcel_seq_nbr as apn_seq,
-					cmas_zip5 as zip,
-					fa_listdate as list_date,
-					fa_propertytype as mls_proptype,
-					fa_listid as listing_id,
-					fa_rent_sale_ind as rent_sale_ind,
-					substring(trim("fa_listdate"), 1, 4) as year,
-					substring(trim("fa_listdate"), 6, 2) as month
-					ROW_NUMBER() OVER
-						(	PARTITION BY
-								cmas_fips_code,
-								cmas_parcel_id,
-								cmas_parcel_seq_nbr,
-								fa_listdate
-							ORDER BY
-								fa_listid DESC
-						) as rownum
-				FROM "corelogic-mls".quicksearch
-				WHERE (rownum = 1)
-					(mls_proptype in `mls_proptype_selections')
-					AND (rent_sale_ind='S')
-					AND (list_date != '')
-				)
-			`UNION_MLS_SUBQUERIES'
-			),
-			
-			mls AS (
 				SELECT *,
 					ROW_NUMBER() OVER
 						(	PARTITION BY
@@ -137,13 +117,37 @@ odbc load,
 							ORDER BY
 								fa_listid DESC
 						) as rownum
+				FROM
+					(SELECT
+						cmas_fips_code as fips, 
+						cmas_parcel_id as apn,
+						cmas_parcel_seq_nbr as apn_seq,
+						cmas_zip5 as zip,
+						fa_listdate as list_date,
+						fa_propertytype as mls_proptype,
+						fa_listid as listing_id,
+						fa_rent_sale_ind as rent_sale_ind,
+						substring(trim("fa_listdate"), 1, 4) as year,
+						substring(trim("fa_listdate"), 6, 2) as month,
+					FROM "corelogic-mls".quicksearch
+					WHERE
+						(cmas_fips_code = '${singlecounty}')
+						AND (substring(trim("fa_listdate"), 1, 4) = '`yy'')
+						AND (substring(trim("fa_listdate"), 6, 2) in `mm')
+						AND (mls_proptype in `mls_proptype_selections')
+						AND (rent_sale_ind='S')
+						AND (list_date != '')
+					)
+				`UNION_MLS_SUBQUERIES'
+			),
+			
+			mls AS (
+				SELECT *
 				FROM raw_mls
 				WHERE (rownum = 1)
-					AND (year = `yy')
-					AND (month in `mm')
-			)
+			),
 			
-			deed AS (
+			raw_deed AS (
 				SELECT
 					"fips code" as fips,
 					"apn (parcel number unformatted)" as apn,
@@ -173,12 +177,18 @@ odbc load,
 						) as rownum
 				FROM
 					corelogic2.ownertransfer
-				WHERE (rownum = 1)
+				WHERE ("fips code" = '${singlecounty}')
+					AND (substring("sale derived recording date", 1, 4) = '`yy'')
+					AND (substring("sale derived recording date", 5, 2) in `mm')
 					AND ("primary category code" IN ('A'))
 					AND ("property indicator code - static" in ('10', '11', '20', '22', '21'))
 					AND ("sale amount" > 0)
-					AND (substring("sale derived recording date", 1, 4) = `yy')
-					AND (substring("sale derived recording date", 5, 2) in `mm')
+			),
+			
+			deed AS (
+				SELECT *
+				FROM raw_deed
+				WHERE (rownum = 1)
 			)
 
 		SELECT *
@@ -188,10 +198,6 @@ odbc load,
 				(mls.fips = tax.fips)
 				AND (mls.apn = tax.apn)
 				AND (mls.apn_seq = tax.apn_seq)
-		WHERE
-			AND (fips = '${singlecounty}')
-			AND (year = '`yy'')
-			AND (month in `mm')
 		ORDER BY
 			fips,
 			apn,
