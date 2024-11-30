@@ -77,6 +77,7 @@ odbc load,
 					"apn sequence number" as apn_seq,
 					"land square footage" as land_footage,
 					"total baths calculated" as nbaths,
+					"bedrooms"
 					ROW_NUMBER() OVER
 						(	PARTITION BY
 								"fips code",
@@ -119,6 +120,8 @@ odbc load,
 						fa_propertytype as mls_proptype,
 						fa_listid as listing_id,
 						fa_rent_sale_ind as rent_sale_ind
+						listingservicename as mls_service_name,
+						listingservicenamecode as mls_service_code
 					FROM "corelogic-mls".quicksearch
 					WHERE
 						(cmas_fips_code = '${singlecounty}')
@@ -144,6 +147,8 @@ odbc load,
 					"apn (parcel number unformatted)" as apn,
 					"apn sequence number" as apn_seq,
 					"sale derived recording date" as recording_date,
+					(substring("sale derived recording date", 1, 4) as year,
+					(substring("sale derived recording date", 5, 2) as month,
 					"transaction batch date" as trans_batch_date,
 					"transaction batch sequence number" as trans_batch_seq,
 					"sale derived date" as sale_date,
@@ -180,43 +185,51 @@ odbc load,
 				SELECT *
 				FROM raw_deed
 				WHERE (rownum = 1)
+			),
+			
+			data AS (
+				SELECT fips, apn, apn_seq, year, month,
+					list_date, zip, mls_proptype, mls_service_name,
+					mls_service_code,
+					NULL AS recording_date, NULL AS new_construction_ind,
+					NULL AS resale_ind, NULL AS land_use_code, NULL AS buyer1,
+					NULL AS buyer2, NULL AS seller1, NULL AS seller2,
+					NULL as sale_amount
+				FROM mls 
+				UNION
+				SELECT fips, apn, apn_seq, year, month,
+					recording_date, new_construction_ind, resale_ind, 
+					land_use_code, buyer1, buyer2, seller1, seller2,
+					sale_amount,
+					NULL AS list_date, NULL AS mls_proptype, NULL AS mls_service_name,
+					NULL AS mls_service_code
+				FROM deed
 			)
 
-		SELECT 	m.fips,
-				m.apn,
-				m.apn_seq,
-				m.year,
-				m.month,
-				m.list_date,
-				m.zip,
-				m.mls_proptype,
+		SELECT 	d.fips,
+				d.apn,
+				d.apn_seq,
+				d.year,
+				d.month,
+				d.list_date,
+				d.zip,
+				d.sale_amount,
+				d.mls_proptype,
+				d.mls_service_name,
+				d.mls_service_code,
 				t.land_footage,
-				t.nbaths
-		FROM mls as mls
-		LEFT JOIN tax
+				t.nbaths,
+				t.bedrooms
+		FROM data as d
+		LEFT JOIN tax as t
 			ON
-				(mls.fips = tax.fips)
-				AND (mls.apn = tax.apn)
-				AND (cast(mls.apn_seq as varchar) = substring(tax.apn_seq,3,1))
+				(m.fips = t.fips)
+				AND (m.apn = t.apn)
+				AND (cast(m.apn_seq as varchar) = substring(t.apn_seq,3,1))
 		ORDER BY
-			mls.fips,
-			mls.apn,
-			mls.apn_seq,
-			mls.list_date
+			m.fips,
+			m.apn,
+			m.apn_seq,
+			m.list_date
 	"');
 	
-/*
-
-			t."bedrooms",
-			t."total`_s_'baths",
-			t."year`_s_'built",
-			t."building`_s_'square`_s_'feet",
-			t."land`_s_'square`_s_'footage",
-			t."batch`_s_'id",
-			t."batch`_s_'seq"
-			
-FULL OUTER JOIN corelogic.`tax_table' as t
-	ON (t."FIPS`_s_'CODE"=q."cmas_fips_code")
-		AND (t."APN`_s_'UNFORMATTED"=q."cmas_parcel_id")
-		AND (cast(t."APN`_s_'SEQUENCE`_s_'NUMBER" as bigint)=q."cmas_parcel_seq_nbr")
-*/
