@@ -49,7 +49,9 @@ foreach suffix of local suffixes {;
 		cmas_zip5 as zip,
 		fa_propertytype as mls_proptype,
 		fa_listid as listing_id,
-		fa_rent_sale_ind as rent_sale_ind
+		fa_rent_sale_ind as rent_sale_ind,
+		listingservicename as mls_service_name,
+		listingservicenamecode as mls_service_code
 	FROM "corelogic-mls".quicksearch_`suffix'
 	WHERE 
 		(cmas_fips_code = '${singlecounty}')
@@ -119,7 +121,7 @@ odbc load,
 						cmas_zip5 as zip,
 						fa_propertytype as mls_proptype,
 						fa_listid as listing_id,
-						fa_rent_sale_ind as rent_sale_ind
+						fa_rent_sale_ind as rent_sale_ind,
 						listingservicename as mls_service_name,
 						listingservicenamecode as mls_service_code
 					FROM "corelogic-mls".quicksearch
@@ -147,8 +149,8 @@ odbc load,
 					"apn (parcel number unformatted)" as apn,
 					"apn sequence number" as apn_seq,
 					"sale derived recording date" as recording_date,
-					(substring("sale derived recording date", 1, 4) as year,
-					(substring("sale derived recording date", 5, 2) as month,
+					substring("sale derived recording date", 1, 4) as year,
+					substring("sale derived recording date", 5, 2) as month,
 					"transaction batch date" as trans_batch_date,
 					"transaction batch sequence number" as trans_batch_seq,
 					"sale derived date" as sale_date,
@@ -191,18 +193,26 @@ odbc load,
 				SELECT fips, apn, apn_seq, year, month,
 					list_date, zip, mls_proptype, mls_service_name,
 					mls_service_code,
-					NULL AS recording_date, NULL AS new_construction_ind,
-					NULL AS resale_ind, NULL AS land_use_code, NULL AS buyer1,
-					NULL AS buyer2, NULL AS seller1, NULL AS seller2,
+					NULL AS recording_date,
+					NULL AS new_construction_ind,
+					NULL AS resale_ind,
+					NULL AS land_use_code,
+					NULL AS buyer1,
+					NULL AS buyer2,
+					NULL AS seller1,
+					NULL AS seller2,
 					NULL as sale_amount
 				FROM mls 
 				UNION
 				SELECT fips, apn, apn_seq, year, month,
-					recording_date, new_construction_ind, resale_ind, 
+				    NULL AS list_date,
+				    NULL AS zip,
+				    NULL AS mls_proptype,
+				    NULL AS mls_service_name,
+					NULL AS mls_service_code,
+				    recording_date, new_construction_ind, resale_ind, 
 					land_use_code, buyer1, buyer2, seller1, seller2,
-					sale_amount,
-					NULL AS list_date, NULL AS mls_proptype, NULL AS mls_service_name,
-					NULL AS mls_service_code
+					sale_amount
 				FROM deed
 			)
 
@@ -219,17 +229,18 @@ odbc load,
 				d.mls_service_code,
 				t.land_footage,
 				t.nbaths,
-				t.bedrooms
+				t.bedrooms,
+				t.land_footage
 		FROM data as d
 		LEFT JOIN tax as t
 			ON
-				(m.fips = t.fips)
-				AND (m.apn = t.apn)
-				AND (cast(m.apn_seq as varchar) = substring(t.apn_seq,3,1))
+				(d.fips = t.fips)
+				AND (d.apn = t.apn)
+				AND (cast(d.apn_seq as int) = cast(t.apn_seq as int)
 		ORDER BY
-			m.fips,
-			m.apn,
-			m.apn_seq,
-			m.list_date
+			d.fips,
+			d.apn,
+			d.apn_seq,
+			d.list_date
 	"');
 	
