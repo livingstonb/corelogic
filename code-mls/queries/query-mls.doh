@@ -236,7 +236,7 @@ odbc load,
 			ON
 				(d.fips = t.fips)
 				AND (d.apn = t.apn)
-				AND (cast(d.apn_seq as int) = cast(t.apn_seq as int)
+				AND (cast(d.apn_seq as int) = cast(t.apn_seq as int))
 		ORDER BY
 			d.fips,
 			d.apn,
