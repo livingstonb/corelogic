@@ -231,7 +231,7 @@ odbc load,
 				d.apn_seq,
 				d.year,
 				d.month,
-				d.day
+				d.day,
 				d.zip,
 				d.sale_amount,
 				d.mls_proptype,
