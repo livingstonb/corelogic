@@ -79,7 +79,7 @@ odbc load,
 					"apn sequence number" as apn_seq,
 					"land square footage" as land_footage,
 					"total baths calculated" as nbaths,
-					"bedrooms"
+					"bedrooms",
 					ROW_NUMBER() OVER
 						(	PARTITION BY
 								"fips code",
@@ -227,7 +227,6 @@ odbc load,
 				d.mls_proptype,
 				d.mls_service_name,
 				d.mls_service_code,
-				t.land_footage,
 				t.nbaths,
 				t.bedrooms,
 				t.land_footage

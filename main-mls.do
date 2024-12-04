@@ -31,9 +31,14 @@ clear;
 local filename "${tempdir}/data_final_${singlecounty}.dta";
 save "`filename'", replace emptyok;
 /* Loop over all quarters */
-forvalues yy = 2016/2016 {;
-forvalues qq = 4/4 {;
+forvalues yy = 2006/2024 {;
+forvalues qq = 1/4 {;
 	clear;
+	
+	if (`yy' == 2024) & (`qq' >= 3) {;
+		continue, break;
+	};
+	
 	do "${codedir}/corelogic_legacy_query.do" "query-mls.doh" `yy' `qq';
 	append using "`filename'";
 	save "`filename'", replace;
