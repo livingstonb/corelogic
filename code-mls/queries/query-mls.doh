@@ -2,11 +2,11 @@
 #delimit ;
 
 /* Create local for tax table name */
-if (`yy' <= 2015) & (`qq' < 2) {;
+if (`yy' < 2015) | ((`yy' == 2015) & (`qq' < 2)) {;
 	/* Fix property characteristics for all pre-2015q2 obs */
 	local tax_table tax_2015_q2;
 };
-else if (`yy' >= 2022) & (`qq' > 2) {;
+else if ((`yy' == 2022) & (`qq' > 2)) | (`yy' > 2022) {;
 	/* Fix property characteristics for all post-2022q2 obs */
 	local tax_table tax_2022_q2;
 };
@@ -14,7 +14,15 @@ else {;
 	local tax_table tax_`yy'_q`qq';
 };
 
-/* -- Query notes -- */
+/* -- tax table variable names have underscores in 2018q4 -- */
+
+if (`yy' == 2018) & (`qq' == 4) {;
+	local tsep "_";
+};
+else {;
+	local tsep " ";
+};
+
 /* macro for mls property type codes */
 local mls_proptype_selections ('SF', 'CN', 'TH', 'RI', 'MF', 'AP');
 
@@ -74,23 +82,23 @@ odbc load,
 
 			raw_tax AS (
 				SELECT
-					"fips code" as fips,
-					"apn unformatted" as apn,
-					"apn sequence number" as apn_seq,
-					"land square footage" as land_footage,
-					"total baths calculated" as nbaths,
+					"fips`tsep'code" as fips,
+					"apn`tsep'unformatted" as apn,
+					"apn`tsep'sequence`tsep'number" as apn_seq,
+					"land`tsep'square`tsep'footage" as land_footage,
+					"total`tsep'baths`tsep'calculated" as nbaths,
 					"bedrooms",
 					ROW_NUMBER() OVER
 						(	PARTITION BY
-								"fips code",
-								"apn unformatted",
-								"apn sequence number"
+								"fips`tsep'code",
+								"apn`tsep'unformatted",
+								"apn`tsep'sequence`tsep'number"
 							ORDER BY
-								"land square footage" DESC
+								"land`tsep'square`tsep'footage" DESC
 						) as rownum
-				FROM corelogic.tax_`yy'_q`qq'
+				FROM corelogic.`tax_table'
 				WHERE
-					("fips code" = '${singlecounty}')
+					("fips`tsep'code" = '${singlecounty}')
 			),
 			
 			tax AS (
@@ -116,7 +124,8 @@ odbc load,
 						cmas_parcel_id as apn,
 						cmas_parcel_seq_nbr as apn_seq,
 						substring(trim(fa_listdate), 1, 4) as year,
-						cast(substring(fa_listdate,6,2) as varchar) as month,
+						cast(substring(fa_listdate, 6, 2) as varchar) as month,
+						cast(substring(fa_listdate, 9, 2) as varchar) as day,
 						fa_listdate as list_date,
 						cmas_zip5 as zip,
 						fa_propertytype as mls_proptype,
@@ -151,6 +160,7 @@ odbc load,
 					"sale derived recording date" as recording_date,
 					substring("sale derived recording date", 1, 4) as year,
 					substring("sale derived recording date", 5, 2) as month,
+					substring("sale derived recording date", 8, 2) as day,
 					"transaction batch date" as trans_batch_date,
 					"transaction batch sequence number" as trans_batch_seq,
 					"sale derived date" as sale_date,
@@ -204,7 +214,7 @@ odbc load,
 					NULL as sale_amount
 				FROM mls 
 				UNION
-				SELECT fips, apn, apn_seq, year, month,
+				SELECT fips, apn, apn_seq, year, month, day,
 				    NULL AS list_date,
 				    NULL AS zip,
 				    NULL AS mls_proptype,
@@ -221,7 +231,7 @@ odbc load,
 				d.apn_seq,
 				d.year,
 				d.month,
-				d.list_date,
+				d.day
 				d.zip,
 				d.sale_amount,
 				d.mls_proptype,
