@@ -1,7 +1,7 @@
 
 #delimit ;
 
-use "${tempdir}/data_final_${singlecounty}.dta", clear;
+use "${tempdir}/data_final_${chosen_fips}.dta", clear;
 destring month day year, force replace;
 drop if missing(day, month, year);
 
@@ -37,6 +37,9 @@ bysort fips apn apn_seq (date): replace newlisting = 1 if (entry == "listing") &
 	(date - date[_n-1] > ${new_listing_cutoff});
 replace newlisting = 0 if missing(newlisting);
 drop prev_mls prev_deed;
+
+order fips apn apn_seq date mdate entry newlisting;
+gsort -date fips apn apn_seq;
 
 /*
 bysort fips apn apn_seq (date): gen listing_group = sum(newlisting);

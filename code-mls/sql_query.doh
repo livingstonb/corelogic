@@ -1,34 +1,5 @@
 
 #delimit ;
-
-/* Create local for tax table name */
-if (`yy' < 2015) | ((`yy' == 2015) & (`qq' < 2)) {;
-	/* Fix property characteristics for all pre-2015q2 obs */
-	local tax_table tax_2015_q2;
-};
-else if ((`yy' == 2022) & (`qq' > 2)) | (`yy' > 2022) {;
-	/* Fix property characteristics for all post-2022q2 obs */
-	local tax_table tax_2022_q2;
-};
-else {;
-	local tax_table tax_`yy'_q`qq';
-};
-
-/* -- tax table variable names have underscores in 2018q4 -- */
-
-if (`yy' == 2018) & (`qq' == 4) {;
-	local tsep "_";
-};
-else {;
-	local tsep " ";
-};
-
-/* macro for mls property type codes */
-local mls_proptype_selections ('SF', 'CN', 'TH', 'RI', 'MF', 'AP');
-
-/* macro for extra quicksearch tables */
-local suffixes 20190701 20191001 20200101 20200401 20200701 20201001
-	20210101 20210401 20210701 20211001 20220101;
 	
 local UNION_MLS_SUBQUERIES;
 foreach suffix of local suffixes {;
@@ -63,7 +34,7 @@ foreach suffix of local suffixes {;
 		'listing' as entry
 	FROM "corelogic-mls".quicksearch_`suffix'
 	WHERE 
-		(cmas_fips_code = '${singlecounty}')
+		(cmas_fips_code = '${chosen_fips}')
 		AND (substring(fa_listdate, 8, 4) = '`yy'')
 		AND (fa_propertytype in `mls_proptype_selections')
 		AND (fa_rent_sale_ind='S')
@@ -100,7 +71,7 @@ odbc load,
 						) as rownum
 				FROM corelogic.`tax_table'
 				WHERE
-					("fips`tsep'code" = '${singlecounty}')
+					("fips`tsep'code" = '${chosen_fips}')
 			),
 			
 			tax AS (
@@ -137,7 +108,7 @@ odbc load,
 						'listing' as entry
 					FROM "corelogic-mls".quicksearch
 					WHERE
-						(cmas_fips_code = '${singlecounty}')
+						(cmas_fips_code = '${chosen_fips}')
 						AND (substring(trim(fa_listdate), 1, 4) = '`yy'')
 						AND (cast(substring(fa_listdate,6,2) as varchar) in `mm')
 						AND (fa_propertytype in `mls_proptype_selections')
@@ -188,11 +159,11 @@ odbc load,
 						) as rownum
 				FROM
 					corelogic2.ownertransfer
-				WHERE ("fips code" = '${singlecounty}')
+				WHERE ("fips code" = '${chosen_fips}')
 					AND (substring("sale derived recording date", 1, 4) = '`yy'')
 					AND (substring("sale derived recording date", 5, 2) in `mm')
 					AND ("primary category code" in ('A'))
-					AND ("property indicator code - static" in ('10', '11', '20', '22', '21'))
+					AND ("property indicator code - static" in `deed_proptype_selections')
 					AND ("sale amount" > 0)
 			),
 			

@@ -16,8 +16,7 @@ cap mkdir "$outdir"
 set odbcmgr unixodbc
 
 * config
-global datevar recording
-global singlecounty "06067"
+global chosen_fips "06067"
 global new_listing_cutoff 180
 
 set trace on
@@ -28,8 +27,9 @@ set tracedepth 1
 /* Main queries */
 #delimit ;
 clear;
-local filename "${tempdir}/data_final_${singlecounty}.dta";
+local filename "${tempdir}/data_final_${chosen_fips}.dta";
 save "`filename'", replace emptyok;
+
 /* Loop over all quarters */
 forvalues yy = 2006/2024 {;
 forvalues qq = 1/4 {;
@@ -39,7 +39,7 @@ forvalues qq = 1/4 {;
 		continue, break;
 	};
 	
-	do "${codedir}/corelogic_legacy_query.do" "query-mls.doh" `yy' `qq';
+	do "${codedir}/query_one_quarter.doh" `yy' `qq';
 	append using "`filename'";
 	save "`filename'", replace;
 };
