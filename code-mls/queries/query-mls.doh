@@ -53,14 +53,15 @@ foreach suffix of local suffixes {;
 			WHEN 'Nov' THEN '11'
 			WHEN 'Dec' THEN '12'
 		END as month,
+		substring(fa_listdate, 5, 2) as day,
 		fa_listdate as list_date,
-		cmas_zip5 as zip,
 		fa_propertytype as mls_proptype,
 		fa_listid as listing_id,
 		fa_rent_sale_ind as rent_sale_ind,
 		listingservicename as mls_service_name,
-		listingservicenamecode as mls_service_code
-	FROM "corelogic-mls".quicksearch_`suffix'
+		listingservicenamecode as mls_service_code,
+		listing_constant as entry
+	FROM "corelogic-mls".quicksearch_`suffix', constants
 	WHERE 
 		(cmas_fips_code = '${singlecounty}')
 		AND (substring(fa_listdate, 8, 4) = '`yy'')
@@ -79,12 +80,19 @@ odbc load,
 		exec(`"
 		
 		WITH
+		
+			constants AS (
+				SELECT
+					'listing' as listing_constant,
+					'sale' as sale_constant
+			),
 
 			raw_tax AS (
 				SELECT
 					"fips`tsep'code" as fips,
 					"apn`tsep'unformatted" as apn,
 					"apn`tsep'sequence`tsep'number" as apn_seq,
+					"property`tsep'zip`tsep'code", as zip,
 					"land`tsep'square`tsep'footage" as land_footage,
 					"total`tsep'baths`tsep'calculated" as nbaths,
 					"bedrooms",
@@ -127,13 +135,13 @@ odbc load,
 						cast(substring(fa_listdate, 6, 2) as varchar) as month,
 						cast(substring(fa_listdate, 9, 2) as varchar) as day,
 						fa_listdate as list_date,
-						cmas_zip5 as zip,
 						fa_propertytype as mls_proptype,
 						fa_listid as listing_id,
 						fa_rent_sale_ind as rent_sale_ind,
 						listingservicename as mls_service_name,
-						listingservicenamecode as mls_service_code
-					FROM "corelogic-mls".quicksearch
+						listingservicenamecode as mls_service_code,
+						listing_constant as entry
+					FROM "corelogic-mls".quicksearch, constants
 					WHERE
 						(cmas_fips_code = '${singlecounty}')
 						AND (substring(trim(fa_listdate), 1, 4) = '`yy'')
@@ -174,6 +182,7 @@ odbc load,
 					"buyer 3 full name" as buyer3,
 					"seller 1 full name" as seller1,
 					"seller 2 full name" as seller2,
+					sale_constant as entry
 					ROW_NUMBER() OVER
 						(	PARTITION BY
 								"fips code",
@@ -184,7 +193,7 @@ odbc load,
 								"sale amount" DESC
 						) as rownum
 				FROM
-					corelogic2.ownertransfer
+					corelogic2.ownertransfer, constants
 				WHERE ("fips code" = '${singlecounty}')
 					AND (substring("sale derived recording date", 1, 4) = '`yy'')
 					AND (substring("sale derived recording date", 5, 2) in `mm')
@@ -200,9 +209,9 @@ odbc load,
 			),
 			
 			data AS (
-				SELECT fips, apn, apn_seq, year, month,
-					list_date, zip, mls_proptype, mls_service_name,
-					mls_service_code,
+				SELECT fips, apn, apn_seq, year, month, day, entry,
+					list_date, mls_proptype, mls_service_name,
+					mls_service_code
 					NULL AS recording_date,
 					NULL AS new_construction_ind,
 					NULL AS resale_ind,
@@ -214,9 +223,8 @@ odbc load,
 					NULL as sale_amount
 				FROM mls 
 				UNION
-				SELECT fips, apn, apn_seq, year, month, day,
+				SELECT fips, apn, apn_seq, year, month, day, entry,
 				    NULL AS list_date,
-				    NULL AS zip,
 				    NULL AS mls_proptype,
 				    NULL AS mls_service_name,
 					NULL AS mls_service_code,
@@ -232,11 +240,12 @@ odbc load,
 				d.year,
 				d.month,
 				d.day,
-				d.zip,
+				d.entry
 				d.sale_amount,
 				d.mls_proptype,
 				d.mls_service_name,
 				d.mls_service_code,
+				t.zip,
 				t.nbaths,
 				t.bedrooms,
 				t.land_footage
