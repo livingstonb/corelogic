@@ -60,7 +60,7 @@ foreach suffix of local suffixes {;
 		fa_rent_sale_ind as rent_sale_ind,
 		listingservicename as mls_service_name,
 		listingservicenamecode as mls_service_code,
-		listing_constant as entry
+		'listing' as entry
 	FROM "corelogic-mls".quicksearch_`suffix', constants
 	WHERE 
 		(cmas_fips_code = '${singlecounty}')
@@ -92,7 +92,7 @@ odbc load,
 					"fips`tsep'code" as fips,
 					"apn`tsep'unformatted" as apn,
 					"apn`tsep'sequence`tsep'number" as apn_seq,
-					"property`tsep'zip`tsep'code", as zip,
+					"property`tsep'zipcode" as zip,
 					"land`tsep'square`tsep'footage" as land_footage,
 					"total`tsep'baths`tsep'calculated" as nbaths,
 					"bedrooms",
@@ -182,7 +182,7 @@ odbc load,
 					"buyer 3 full name" as buyer3,
 					"seller 1 full name" as seller1,
 					"seller 2 full name" as seller2,
-					sale_constant as entry
+					'sale' as entry,
 					ROW_NUMBER() OVER
 						(	PARTITION BY
 								"fips code",
@@ -211,7 +211,7 @@ odbc load,
 			data AS (
 				SELECT fips, apn, apn_seq, year, month, day, entry,
 					list_date, mls_proptype, mls_service_name,
-					mls_service_code
+					mls_service_code,
 					NULL AS recording_date,
 					NULL AS new_construction_ind,
 					NULL AS resale_ind,
@@ -240,7 +240,7 @@ odbc load,
 				d.year,
 				d.month,
 				d.day,
-				d.entry
+				d.entry,
 				d.sale_amount,
 				d.mls_proptype,
 				d.mls_service_name,
