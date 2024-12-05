@@ -38,7 +38,6 @@ else {;
 };
 
 /* -- tax table variable names have underscores in 2018q4 -- */
-
 if (`yy' == 2018) & (`qq' == 4) {;
 	local tsep "_";
 };

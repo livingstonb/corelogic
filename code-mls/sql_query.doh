@@ -1,6 +1,9 @@
 
 #delimit ;
-	
+
+/* Date variable is formatted differently in quicksearch_* tables
+than in quicksearch, so have to take query these differently.
+*/
 local UNION_MLS_SUBQUERIES;
 foreach suffix of local suffixes {;
 	local UNION_MLS_SUBQUERIES `UNION_MLS_SUBQUERIES'
@@ -51,9 +54,11 @@ odbc load,
 		exec(`"
 		
 		WITH
-		
+			
+			/* TAX TABLES */
 			raw_tax AS (
 				SELECT
+					/* `tsep' is _ in 2018q4, otherwise is space */
 					"fips`tsep'code" as fips,
 					"apn`tsep'unformatted" as apn,
 					"apn`tsep'sequence`tsep'number" as apn_seq,
@@ -62,11 +67,11 @@ odbc load,
 					"total`tsep'baths`tsep'calculated" as nbaths,
 					"bedrooms",
 					ROW_NUMBER() OVER
-						(	PARTITION BY
+						(	PARTITION BY /* variables selected for drop duplicates */
 								"fips`tsep'code",
 								"apn`tsep'unformatted",
 								"apn`tsep'sequence`tsep'number"
-							ORDER BY
+							ORDER BY /* cdetermines how to select among duplicates */
 								"land`tsep'square`tsep'footage" DESC
 						) as rownum
 				FROM corelogic.`tax_table'
@@ -77,18 +82,19 @@ odbc load,
 			tax AS (
 				SELECT *
 				FROM raw_tax
-				WHERE (rownum = 1)
+				WHERE (rownum = 1) /* drops duplicates */
 			),
 			
+			/* LISTINGS TABLES */
 			raw_mls AS (
 				SELECT *,
 					ROW_NUMBER() OVER
-						(	PARTITION BY
+						(	PARTITION BY /* variables selected for drop duplicates */
 								fips,
 								apn,
 								apn_seq,
 								list_date
-							ORDER BY
+							ORDER BY /* determines how to select among duplicates */
 								listing_id DESC
 						) as rownum
 				FROM (
@@ -121,10 +127,11 @@ odbc load,
 			mls AS (
 				SELECT *
 				FROM raw_mls
-				WHERE (rownum = 1)
-					AND (month in `mm')
+				WHERE (rownum = 1) /* drops duplicates */
+					AND (month in `mm') /* month not selected on in subqueries */
 			),
 			
+			/* DEED TABLES */
 			raw_deed AS (
 				SELECT
 					"fips code" as fips,
@@ -149,12 +156,12 @@ odbc load,
 					"seller 2 full name" as seller2,
 					'sale' as entry,
 					ROW_NUMBER() OVER
-						(	PARTITION BY
+						(	PARTITION BY /* variables selected for drop duplicates */
 								"fips code",
 								"apn (parcel number unformatted)",
 								"apn sequence number",
 								"sale derived recording date"
-							ORDER BY
+							ORDER BY /* determines how to select among duplicates */
 								"sale amount" DESC
 						) as rownum
 				FROM
@@ -170,9 +177,13 @@ odbc load,
 			deed AS (
 				SELECT *
 				FROM raw_deed
-				WHERE (rownum = 1)
+				WHERE (rownum = 1) /* drops duplicates */
 			),
 			
+			/* append listings and deed queries
+				- keep variables in same order for both tables
+				- use NULL AS if variable does not show up in that table
+			*/
 			data AS (
 				SELECT fips, apn, apn_seq, year, month, day, entry,
 					list_date, mls_proptype, mls_service_name,
@@ -199,6 +210,7 @@ odbc load,
 				FROM deed
 			)
 
+		/* merge (listings + deed) with tax tables */
 		SELECT 	d.fips,
 				d.apn,
 				d.apn_seq,
