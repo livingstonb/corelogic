@@ -60,7 +60,7 @@ foreach suffix of local suffixes {;
 		fa_rent_sale_ind as rent_sale_ind,
 		listingservicename as mls_service_name,
 		listingservicenamecode as mls_service_code,
-		'listing'' as entry
+		'listing' as entry
 	FROM "corelogic-mls".quicksearch_`suffix'
 	WHERE 
 		(cmas_fips_code = '${singlecounty}')
