@@ -39,7 +39,7 @@ forvalues qq = 1/4 {;
 		continue, break;
 	};
 	
-	do "${codedir}/query_one_quarter.doh" `yy' `qq';
+	do "${codedir}/query_one_quarter.do" `yy' `qq';
 	append using "`filename'";
 	save "`filename'", replace;
 };
