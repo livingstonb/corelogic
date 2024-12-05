@@ -50,9 +50,7 @@ foreach suffix of local suffixes {;
 		'listing' as entry
 	FROM "corelogic-mls".quicksearch_`suffix'
 	WHERE 
-		(cmas_fips_code = '${chosen_fips}')
-		AND (substring(fa_listdate, 8, 4) = '`yy'')
-		AND (fa_propertytype in `mls_proptype_selections')
+		(fa_propertytype in `mls_proptype_selections')
 		AND (fa_rent_sale_ind='S')
 		AND (fa_listdate != '')
 		);
@@ -123,10 +121,7 @@ odbc load,
 						'listing' as entry
 					FROM "corelogic-mls".quicksearch
 					WHERE
-						(cmas_fips_code = '${chosen_fips}')
-						AND (substring(trim(fa_listdate), 1, 4) = '`yy'')
-						AND (cast(substring(fa_listdate,6,2) as varchar) in `mm')
-						AND (fa_propertytype in `mls_proptype_selections')
+						(fa_propertytype in `mls_proptype_selections')
 						AND (fa_rent_sale_ind='S')
 						AND (fa_listdate != '')
 					)
@@ -167,10 +162,8 @@ odbc load,
 						) as rownum
 				FROM
 					corelogic2.ownertransfer
-				WHERE ("fips code" = '${chosen_fips}')
-					AND (substring("sale derived recording date", 1, 4) = '`yy'')
-					AND (substring("sale derived recording date", 5, 2) in `mm')
-					AND ("primary category code" in ('A'))
+				WHERE 
+					("primary category code" in ('A'))
 					AND ("property indicator code - static" in `deed_proptype_selections')
 					AND ("sale amount" > 0)
 			),
