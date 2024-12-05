@@ -15,7 +15,16 @@ set odbcmgr unixodbc
 
 #delimit ;
 clear;
-			
+
+global new_listing_cutoff 180;
+
+/* macro for mls/deed property type codes */
+local mls_proptype_selections ('SF', 'CN', 'TH', 'RI', 'MF', 'AP');
+local deed_proptype_selections ('10', '11', '20', '22', '21');
+
+/* macro for extra quicksearch tables */
+local suffixes 20190701 20191001 20200101 20200401 20200701 20201001
+	20210101 20210401 20210701 20211001 20220101;			
 			
 
 /* Date variable is formatted differently in quicksearch_* tables
@@ -132,7 +141,6 @@ odbc load,
 				SELECT *
 				FROM raw_mls
 				WHERE (rownum = 1) /* drops duplicates */
-					AND (month in `mm') /* month not selected on in subqueries */
 			),
 			
 			/* DEED TABLES */
@@ -226,6 +234,7 @@ odbc load,
 		
 		new_listings AS (
 			SELECT *,
+				MAKE_DATE(year, month, day) as constructed_date,
 				LAG(entry) OVER (
 					PARTITION BY
 						fips, apn, apn_seq
@@ -243,7 +252,12 @@ odbc load,
 		
 		final_data AS (
 			SELECT *,
-				-- Create 'prev_deed' and 'prev_mls' based on the previous entry
+				LAG(constructed_date) OVER (
+					PARTITION BY
+						fips, apn, apn_seq
+					ORDER BY
+						constructed_date
+					) AS prev_date,
 				CASE 
 					WHEN prev_entry = 'sale' THEN 1
 					ELSE 0
@@ -258,13 +272,10 @@ odbc load,
 					ELSE 0
 				END AS newlisting
 			FROM new_listings
-		)
+		),
 		
-		SELECT substring(zip, 1, 5) as zip,
-			year,
-			month,
-			count(*) as listings
-		FROM (SELECT *,
+		pre_newlistings AS (
+			SELECT *,
 				CASE
 					WHEN (entry = 'listing' AND prev_deed = 1)
 						OR (entry = 'sale' AND prev_deed = 1)
@@ -272,7 +283,25 @@ odbc load,
 					ELSE newlisting
 				END AS newlisting
 			FROM final_data
-			)
+		),
+		
+		newlistings AS (
+			SELECT *,
+				CASE
+					WHEN (constructed_date - prev_date > ${new_listing_cutoff})
+						AND (entry = 'listing') AND (prev_mls = 1)
+						THEN 1
+					ELSE newlisting
+				END
+			FROM pre_newlistings
+		)
+		
+		
+		SELECT substring(zip, 1, 5) as zip,
+			year,
+			month,
+			count(*) as listings
+		FROM 
 		WHERE newlisting = 1
 		GROUP BY zip, year, month,
 	"');
