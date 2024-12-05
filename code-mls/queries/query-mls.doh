@@ -60,8 +60,8 @@ foreach suffix of local suffixes {;
 		fa_rent_sale_ind as rent_sale_ind,
 		listingservicename as mls_service_name,
 		listingservicenamecode as mls_service_code,
-		'listing' as entry
-	FROM "corelogic-mls".quicksearch_`suffix', constants
+		'listing'' as entry
+	FROM "corelogic-mls".quicksearch_`suffix'
 	WHERE 
 		(cmas_fips_code = '${singlecounty}')
 		AND (substring(fa_listdate, 8, 4) = '`yy'')
@@ -81,12 +81,6 @@ odbc load,
 		
 		WITH
 		
-			constants AS (
-				SELECT
-					'listing' as listing_constant,
-					'sale' as sale_constant
-			),
-
 			raw_tax AS (
 				SELECT
 					"fips`tsep'code" as fips,
@@ -140,8 +134,8 @@ odbc load,
 						fa_rent_sale_ind as rent_sale_ind,
 						listingservicename as mls_service_name,
 						listingservicenamecode as mls_service_code,
-						listing_constant as entry
-					FROM "corelogic-mls".quicksearch, constants
+						'listing' as entry
+					FROM "corelogic-mls".quicksearch
 					WHERE
 						(cmas_fips_code = '${singlecounty}')
 						AND (substring(trim(fa_listdate), 1, 4) = '`yy'')
@@ -193,7 +187,7 @@ odbc load,
 								"sale amount" DESC
 						) as rownum
 				FROM
-					corelogic2.ownertransfer, constants
+					corelogic2.ownertransfer
 				WHERE ("fips code" = '${singlecounty}')
 					AND (substring("sale derived recording date", 1, 4) = '`yy'')
 					AND (substring("sale derived recording date", 5, 2) in `mm')
