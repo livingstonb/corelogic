@@ -292,7 +292,7 @@ odbc load,
 						AND (entry = 'listing') AND (prev_mls = 1)
 						THEN 1
 					ELSE newlisting
-				END
+				END as newlisting
 			FROM pre_newlistings
 		)
 		
@@ -303,7 +303,7 @@ odbc load,
 			count(*) as listings
 		FROM 
 		WHERE newlisting = 1
-		GROUP BY zip, year, month,
+		GROUP BY zip, year, month
 	"');
 	
 save "${tempdir}/location_time_counts_newlistings.dta", replace;
