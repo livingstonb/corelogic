@@ -2,7 +2,7 @@
 #delimit ;
 
 /* Date variable is formatted differently in quicksearch_* tables
-than in quicksearch, so have to take query these differently.
+than in quicksearch, so have to query these differently.
 */
 local UNION_MLS_SUBQUERIES;
 foreach suffix of local suffixes {;
@@ -64,15 +64,19 @@ odbc load,
 					"apn`tsep'sequence`tsep'number" as apn_seq,
 					"property`tsep'zipcode" as zip,
 					"land`tsep'square`tsep'footage" as land_footage,
+					"universal`tsep'building`tsep'square`tsep'feet" as building_sq_ft,
 					"total`tsep'baths`tsep'calculated" as nbaths,
 					"bedrooms",
+					"recording`tsep'date" as sale_date_assessor,
+					"sale`tsep'amount" as sale_amount_assessor,
 					ROW_NUMBER() OVER
 						(	PARTITION BY /* variables selected for drop duplicates */
 								"fips`tsep'code",
 								"apn`tsep'unformatted",
 								"apn`tsep'sequence`tsep'number"
 							ORDER BY /* cdetermines how to select among duplicates */
-								"land`tsep'square`tsep'footage" DESC
+								"sale`tsep'amount" DESC,
+								"recording`tsep'date" DESC
 						) as rownum
 				FROM corelogic.`tax_table'
 				WHERE
@@ -225,7 +229,10 @@ odbc load,
 				t.zip,
 				t.nbaths,
 				t.bedrooms,
-				t.land_footage
+				t.land_footage,
+				t.building_sq_ft,
+				t.sale_date_assessor,
+				t.sale_amount_assessor
 		FROM data as d
 		LEFT JOIN tax as t
 			ON
