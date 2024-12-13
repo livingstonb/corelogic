@@ -1,8 +1,10 @@
 
 #delimit ;
 
-/* Date variable is formatted differently in quicksearch_* tables
-than in quicksearch, so have to query these differently.
+/*
+	Date variable is formatted differently in quicksearch_* tables
+than in quicksearch, so have to query these differently. Do this by taking UNION
+of these subqueries (local created here) and later UNION this with quicksearch.
 */
 local UNION_MLS_SUBQUERIES;
 foreach suffix of local suffixes {;
@@ -74,9 +76,8 @@ odbc load,
 								"fips`tsep'code",
 								"apn`tsep'unformatted",
 								"apn`tsep'sequence`tsep'number"
-							ORDER BY /* cdetermines how to select among duplicates */
-								"sale`tsep'amount" DESC,
-								"recording`tsep'date" DESC
+							ORDER BY /* determines how to select among duplicates */
+								"sale`tsep'amount" DESC
 						) as rownum
 				FROM corelogic.`tax_table'
 				WHERE
@@ -99,7 +100,7 @@ odbc load,
 								apn_seq,
 								list_date
 							ORDER BY /* determines how to select among duplicates */
-								listing_id DESC
+								listing_id DESC /* not sure if necessary */
 						) as rownum
 				FROM (
 					(SELECT
@@ -125,6 +126,7 @@ odbc load,
 						AND (fa_rent_sale_ind='S')
 						AND (fa_listdate != '')
 					)
+				/* Take union with other quicksearch tables (quicksearch_******) */
 				`UNION_MLS_SUBQUERIES' )
 			),
 			
@@ -132,7 +134,7 @@ odbc load,
 				SELECT *
 				FROM raw_mls
 				WHERE (rownum = 1) /* drops duplicates */
-					AND (month in `mm') /* month not selected on in subqueries */
+					AND (month in `mm') /* month was not previously filtered subqueries */
 			),
 			
 			/* DEED TABLES */
@@ -214,7 +216,7 @@ odbc load,
 				FROM deed
 			)
 
-		/* merge (listings + deed) with tax tables */
+		/* merge data subquery just made (listings + deed) with tax tables */
 		SELECT 	d.fips,
 				d.apn,
 				d.apn_seq,

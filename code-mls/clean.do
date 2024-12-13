@@ -44,3 +44,10 @@ gsort -date fips apn apn_seq;
 /*
 bysort fips apn apn_seq (date): gen listing_group = sum(newlisting);
 */
+
+/* Tax data sales data */
+replace sale_date_assessor = "" if sale_date_assessor == "0";
+replace sale_amount_assessor = "" if sale_amount_assessor == "0";
+
+gen prev_sale_assessor = date(sale_date_assessor, "YMD")
+format %td prev_sale_assessor;

@@ -1,6 +1,6 @@
 clear
 
-// global project "/Users/brianlivingston/Dropbox/NU/Spring 2024/RA/corelogic"
+global project "/Users/brianlivingston/Dropbox/NU/Spring 2024/RA/corelogic"
 
 global project "~/charlie-project/corelogic"
 global codedir "${project}/code-mls"

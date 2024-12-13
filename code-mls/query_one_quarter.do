@@ -1,3 +1,4 @@
+/* year and quarter passed from main do-file */
 args yy qq
 
 * Load packages
@@ -5,12 +6,7 @@ set odbcmgr unixodbc
 
 #delimit ;
 
-/* Loop over all quarters */
-
-local quicksearch_table quicksearch;
-local filename "${tempdir}/data_mls_${chosen_fips}.dta";
-local month_expr;
-		
+/* Months to select */		
 if `qq' == 1 {;
 	local mm "('01', '02', '03')";
 };
@@ -37,7 +33,7 @@ else {;
 	local tax_table tax_`yy'_q`qq';
 };
 
-/* -- tax table variable names have underscores in 2018q4 -- */
+/* Spaces in variables names are underscores in 2018q4 tax tables */
 if (`yy' == 2018) & (`qq' == 4) {;
 	local tsep "_";
 };
@@ -45,11 +41,11 @@ else {;
 	local tsep " ";
 };
 
-/* macro for mls/deed property type codes */
+/* Macro for mls/deed property type codes */
 local mls_proptype_selections ('SF', 'CN', 'TH', 'RI', 'MF', 'AP');
 local deed_proptype_selections ('10', '11', '20', '22', '21');
 
-/* macro for extra quicksearch tables */
+/* Macro for extra quicksearch tables */
 local suffixes 20190701 20191001 20200101 20200401 20200701 20201001
 	20210101 20210401 20210701 20211001 20220101;
 		
