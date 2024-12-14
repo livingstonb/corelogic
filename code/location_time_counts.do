@@ -1,7 +1,6 @@
 
-
+/* Directories */
 global project "~/charlie-project/corelogic"
-// global project "~/Dropbox/NU/Spring 2024/RA/corelogic"
 global codedir "${project}/code"
 global tempdir "${project}/temp"
 global outdir "${project}/output"
@@ -11,23 +10,22 @@ cd "$project"
 cap mkdir "$tempdir"
 cap mkdir "$outdir"
 
+/* For query */
 set odbcmgr unixodbc
 
 #delimit ;
 clear;
 
-/* macro for mls/deed property type codes */
+/* mls/deed property type codes */
 local mls_proptype_selections ('SF', 'CN', 'TH', 'RI', 'MF', 'AP');
 local deed_proptype_selections ('10', '11', '20', '22', '21');
 
-/* macro for extra quicksearch tables */
-local suffixes 20190701 20191001 20200101 20200401 20200701 20201001
-	20210101 20210401 20210701 20211001 20220101;			
-			
-
-/* Date variable is formatted differently in quicksearch_* tables
-than in quicksearch, so have to take query these differently.
+/*
+	Local to construct string that will union over different quicksearch
+	tables in query. Date format is different than corelogic-mls.quicksearch
 */
+local suffixes 20190701 20191001 20200101 20200401 20200701 20201001
+	20210101 20210401 20210701 20211001 20220101;	
 local UNION_MLS_SUBQUERIES;
 foreach suffix of local suffixes {;
 	local UNION_MLS_SUBQUERIES `UNION_MLS_SUBQUERIES'
@@ -36,8 +34,8 @@ foreach suffix of local suffixes {;
 		cmas_fips_code as fips,
 		cmas_parcel_id as apn,
 		cmas_parcel_seq_nbr as apn_seq,
-		substring(fa_listdate,8,4) as year,
-		CASE substring(fa_listdate,1,3)
+		substring(fa_listdate, 8, 4) as year,
+		CASE substring(fa_listdate, 1, 3)
 			WHEN 'Jan' THEN '01'
 			WHEN 'Feb' THEN '02'
 			WHEN 'Mar' THEN '03'
@@ -60,17 +58,15 @@ foreach suffix of local suffixes {;
 		AND (fa_listdate != '')
 		);
 };
-/*
-- First set up subquery 'tax'
-*/
 
-/* Query */
+/* Actual query */
 odbc load,
 		dsn("SimbaAthena")
 		exec(`"
 		
+		/* Setup common table expressions using WITH clause */
 		WITH
-			/* LISTINGS TABLES */
+			/* Listings */
 			raw_mls AS (
 				SELECT
 					orig_zip,
@@ -78,31 +74,33 @@ odbc load,
 					month,
 					ROW_NUMBER() OVER
 						(	PARTITION BY
-								/* only drop duplicates along these vars */
+								/* will drop duplicates along these vars */
 								fips,
 								apn,
 								apn_seq,
 								list_date
 						) as rownum
-				FROM (
-					(SELECT
-						cmas_fips_code as fips, 
-						cmas_parcel_id as apn,
-						cmas_parcel_seq_nbr as apn_seq,
-						substring(trim(fa_listdate), 1, 4) as year,
-						cast(substring(fa_listdate, 6, 2) as varchar) as month,
-						fa_listdate as list_date,
-						cmas_zip5 as orig_zip
-					FROM "corelogic-mls".quicksearch
-					WHERE
-						(fa_propertytype in `mls_proptype_selections')
-						AND (fa_rent_sale_ind='S')
-						AND (fa_listdate != '')
-					)
-				`UNION_MLS_SUBQUERIES' ) 
+				FROM /* Union of quicksearch* tables */
+						(
+						(SELECT
+							cmas_fips_code as fips, 
+							cmas_parcel_id as apn,
+							cmas_parcel_seq_nbr as apn_seq,
+							substring(trim(fa_listdate), 1, 4) as year,
+							cast(substring(fa_listdate, 6, 2) as varchar) as month,
+							fa_listdate as list_date,
+							cmas_zip5 as orig_zip
+						FROM "corelogic-mls".quicksearch
+						WHERE
+							(fa_propertytype in `mls_proptype_selections')
+							AND (fa_rent_sale_ind='S')
+							AND (fa_listdate != '')
+						)
+						`UNION_MLS_SUBQUERIES'
+					) 
 			),
 			
-			/* count listings in zip-year-month */
+			/* Count listings in zip-year-month */
 			mls AS (
 				SELECT substring(orig_zip,1,5) as zip, year, month, count(*) as listings
 				FROM raw_mls
@@ -110,14 +108,15 @@ odbc load,
 				GROUP BY substring(orig_zip,1,5), year, month
 			),
 			
-			/* DEED TABLES */
+			/* Sales */
 			raw_deed AS (
 				SELECT
 					substring("sale derived recording date", 1, 4) as year,
 					substring("sale derived recording date", 5, 2) as month,
-					substring("deed situs zip code - static",1,5) as zip,
+					substring("deed situs zip code - static", 1, 5) as zip,
 				ROW_NUMBER() OVER
 					(	PARTITION BY
+							/* will drop duplicates along these vars */
 							"fips code",
 							"apn (parcel number unformatted)",
 							"apn sequence number",
@@ -132,15 +131,15 @@ odbc load,
 					AND "deed situs zip code - static" != ''
 			),
 			
-			/* count sales in zip-year-month */
+			/* Count sales in zip-year-month */
 			deed AS (
 				SELECT zip, year, month, count(*) as sales
 				FROM raw_deed
-				WHERE (rownum = 1)
+				WHERE (rownum = 1) /* drops duplicates */
 				GROUP BY zip, year, month
 			)
 			
-			/* merge sales and listings */
+			/* Merge sales and listings */
 			SELECT *
 			FROM mls
 			FULL JOIN deed
@@ -148,8 +147,7 @@ odbc load,
 			ORDER BY zip, year, month
 
 	"');
-	
-save "${tempdir}/location_time_counts_new.dta", replace;
+
 
 keep if strlen(strtrim(zip)) == 5;
 drop if strpos(zip, "#") > 0;
@@ -165,5 +163,7 @@ format %tm mdate;
 
 drop if year <= 1950;
 drop if year > 2025;
+
+save "${tempdir}/location_time_counts_new.dta", replace;
 	
 	

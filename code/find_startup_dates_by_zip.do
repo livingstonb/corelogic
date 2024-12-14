@@ -1,5 +1,27 @@
-clear
- use "${outdir}/monthly_counts_zip_11_26.dta"
+/*
+	This file uses sales and listings counts by zip-year-month produced
+	by location_time_counts do-file, smooths sales and listings, and
+	applies an algorithm to identify the date at which sales (and separately, listings)
+	"turns on" for each zip.
+	
+	PDFs containing plots for the zips listed below are created.
+*/
+
+/* Directories */
+global project "~/charlie-project/corelogic"
+global codedir "${project}/code"
+global tempdir "${project}/temp"
+global outdir "${project}/output"
+global datadir "${project}/data"
+
+cd "$project"
+cap mkdir "$tempdir"
+cap mkdir "$outdir"
+
+/* File from location_time_counts.do, rename as needed. */
+use "${outdir}/monthly_counts_zip_11_26.dta", clear
+
+/* Clean and smooth listings/sales */
 drop date
 rename mdate date
 drop if date < ym(1970, 1)
@@ -10,11 +32,12 @@ tsset zip date
 tssmooth ma listings_ma = listings, window(6 1 5)
 tssmooth ma sales_ma = sales, window(6 1 5)
 
+/*
+	Algorithm to identify start date
+	Find the last date at which sales or listings smoothed jump by over 200%
+*/
 gen pct_ch_sales = (sales_ma - l12.sales_ma) / l12.sales_ma
 gen pct_ch_listings = (listings_ma - l12.listings_ma) / l12.listings_ma
-
-// Find the last date at which sales or listings smoothed jump by over 200%
-// Taking out the pandemic because there can be weird blips in sales and listings which brian is looking into
 
 egen temporary = max(date) if pct_ch_sales > 1  & date < ym(2021,1), by(zip)
 egen max_bad_sales = max(temporary), by(zip)
@@ -34,27 +57,15 @@ gen line_bad_sales = (date > max_bad_sales) * max_sales
 
 gen temp_sales_gt_listings = sales > listings if !missing(sales, listings) ///
 	& (date > max_bad_listings) & (date > max_bad_sales)
-// egen NN = count(temp_sales_gt_listings), by(zip)
-// replace temp_sales_gt_listings = temp_sales_gt_listings / NN
+
 egen share_sales_gt_listings = mean(temp_sales_gt_listings), by(zip)
 drop temp_sales_gt_listings
 
 /*
-44022
-2445
-2138
-2118
-90049
-60202
-63935
+	List of zips to plot. Note that IF NUMBER OF ZIPS IS CHANGED, code that creates
+	pdf pages will have to be changed. Currently creates pdf with 8 plots
+	per page and 14 pages.
 */
-local zip = 44022
-// #delimit ;
-// twoway (line listings_ma date, lpattern()) (line sales_ma date)
-// 	(line line_bad_listings date) (line line_bad_sales date)
-// 		if zip == `zip' & date > ym(1985,1), legend(label(1 "Listings MA") label(2  "Sales MA") label(3 "Listings Good") label(4 "Sales Good") position(6) rows(1)) title("`zip'");
-
-local zips 44022 2445 2138 2118 90049 60202 63935
 
 #delimit ;
 local zips
@@ -70,6 +81,7 @@ putpdf begin;
 
 foreach zip of local zips {;
 
+	/* Create indication for if zip looks particularly bad */
 	quietly sum share_sales_gt_listings if zip == `zip';
 	local share_bad = r(max);
 	if 	`share_bad' > 0.85 {;
