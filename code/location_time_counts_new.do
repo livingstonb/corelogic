@@ -16,8 +16,6 @@ set odbcmgr unixodbc
 #delimit ;
 clear;
 
-global new_listing_cutoff 180;
-
 /* macro for mls/deed property type codes */
 local mls_proptype_selections ('SF', 'CN', 'TH', 'RI', 'MF', 'AP');
 local deed_proptype_selections ('10', '11', '20', '22', '21');
@@ -79,7 +77,8 @@ odbc load,
 					year,
 					month,
 					ROW_NUMBER() OVER
-						(	PARTITION BY /* variables selected for drop duplicates */
+						(	PARTITION BY
+								/* only drop duplicates along these vars */
 								fips,
 								apn,
 								apn_seq,
@@ -103,11 +102,12 @@ odbc load,
 				`UNION_MLS_SUBQUERIES' ) 
 			),
 			
+			/* count listings in zip-year-month */
 			mls AS (
 				SELECT substring(orig_zip,1,5) as zip, year, month, count(*) as listings
 				FROM raw_mls
 				WHERE (rownum = 1) /* drops duplicates */
-				GROUP BY zip, year, month
+				GROUP BY substring(orig_zip,1,5), year, month
 			),
 			
 			/* DEED TABLES */
@@ -117,7 +117,7 @@ odbc load,
 					substring("sale derived recording date", 5, 2) as month,
 					substring("deed situs zip code - static",1,5) as zip,
 				ROW_NUMBER() OVER
-					(	PARTITION BY /* variables selected for drop duplicates */
+					(	PARTITION BY
 							"fips code",
 							"apn (parcel number unformatted)",
 							"apn sequence number",
@@ -129,9 +129,10 @@ odbc load,
 					("primary category code" in ('A'))
 					AND ("property indicator code - static" in `deed_proptype_selections')
 					AND ("sale amount" > 0)
-					AND LEN("deed situs zip code - static") > 4
+					AND "deed situs zip code - static" != ''
 			),
 			
+			/* count sales in zip-year-month */
 			deed AS (
 				SELECT zip, year, month, count(*) as sales
 				FROM raw_deed
@@ -139,6 +140,7 @@ odbc load,
 				GROUP BY zip, year, month
 			)
 			
+			/* merge sales and listings */
 			SELECT *
 			FROM mls
 			FULL JOIN deed
