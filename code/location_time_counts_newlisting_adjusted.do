@@ -56,7 +56,8 @@ foreach suffix of local suffixes {;
 		substring(fa_listdate, 5, 2) as day,
 		fa_listdate as list_date,
 		fa_propertytype as mls_proptype,
-		'listing' as entry
+		'listing' as entry,
+		cmas_zip5 as zip
 	FROM "corelogic-mls".quicksearch_`suffix'
 	WHERE 
 		(fa_propertytype in `mls_proptype_selections')
@@ -94,7 +95,8 @@ odbc load,
 						cast(substring(fa_listdate, 9, 2) as varchar) as day,
 						fa_listdate as list_date,
 						fa_propertytype as mls_proptype,
-						'listing' as entry
+						'listing' as entry,
+						cmas_zip5 as zip
 					FROM "corelogic-mls".quicksearch
 					WHERE
 						(fa_propertytype in `mls_proptype_selections')
@@ -126,6 +128,7 @@ odbc load,
 					"sale amount" as sale_amount,
 					"land use code - static" as land_use_code,
 					'sale' as entry,
+					"deed situs zip code - static" as zip,
 					ROW_NUMBER() OVER
 						(	PARTITION BY /* variables selected for drop duplicates */
 								"fips code",
@@ -154,14 +157,14 @@ odbc load,
 				- use NULL AS if variable does not show up in that table
 			*/
 			data AS (
-				SELECT fips, apn, apn_seq, year, month, day, entry,
+				SELECT fips, apn, apn_seq, year, month, day, entry, zip
 					list_date, mls_proptype,
 					NULL AS recording_date,
 					NULL AS land_use_code,
 					NULL as sale_amount
 				FROM mls 
 				UNION
-				SELECT fips, apn, apn_seq, year, month, day, entry,
+				SELECT fips, apn, apn_seq, year, month, day, entry, zip
 				    NULL AS list_date,
 				    NULL AS mls_proptype,
 				    recording_date, land_use_code, sale_amount
@@ -211,7 +214,7 @@ odbc load,
 		),
 		
 		with_newlistings AS (
-			SELECT fips, apn, apn_seq, year, month, day, entry,
+			SELECT fips, apn, apn_seq, year, month, day, entry, zip,
 					list_date, mls_proptype, recording_date, land_use_code, sale_amount,
 					constructed_date, prev_entry, prev_date, prev_mls,
 				CASE
@@ -224,7 +227,7 @@ odbc load,
 		),
 		
 		revised_newlisting AS (
-			SELECT fips, apn, apn_seq, year, month, day, entry,
+			SELECT fips, apn, apn_seq, year, month, day, entry, zip,
 					list_date, mls_proptype, recording_date, land_use_code, sale_amount,
 					constructed_date, prev_entry, prev_date, prev_mls,
 				CASE
@@ -233,7 +236,7 @@ odbc load,
 						THEN 1
 					ELSE newlisting
 				END as newlisting
-			FROM pre_newlistings
+			FROM with_newlistings
 		)
 		
 		
@@ -241,7 +244,7 @@ odbc load,
 			year,
 			month,
 			count(*) as listings
-		FROM newlistings
+		FROM revised_newlisting
 		WHERE newlisting = 1
 		GROUP BY zip, year, month
 	"');
