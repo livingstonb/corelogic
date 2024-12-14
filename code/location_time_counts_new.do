@@ -54,7 +54,7 @@ foreach suffix of local suffixes {;
 			WHEN 'Dec' THEN '12'
 		END as month,
 		fa_listdate as list_date,
-		cmas_zip5 as zip
+		cmas_zip5 as orig_zip
 	FROM "corelogic-mls".quicksearch_`suffix'
 	WHERE 
 		(fa_propertytype in `mls_proptype_selections')
@@ -75,7 +75,7 @@ odbc load,
 			/* LISTINGS TABLES */
 			raw_mls AS (
 				SELECT
-					zip,
+					orig_zip,
 					year,
 					month,
 					ROW_NUMBER() OVER
@@ -93,7 +93,7 @@ odbc load,
 						substring(trim(fa_listdate), 1, 4) as year,
 						cast(substring(fa_listdate, 6, 2) as varchar) as month,
 						fa_listdate as list_date,
-						cmas_zip5 as zip
+						cmas_zip5 as orig_zip
 					FROM "corelogic-mls".quicksearch
 					WHERE
 						(fa_propertytype in `mls_proptype_selections')
@@ -104,9 +104,10 @@ odbc load,
 			),
 			
 			mls AS (
-				SELECT zip, year, month, count(*) as listings
+				SELECT substring(orig_zip,1,5) as zip, year, month, count(*) as listings
 				FROM raw_mls
 				WHERE (rownum = 1) /* drops duplicates */
+				GROUP BY zip, year, month
 			),
 			
 			/* DEED TABLES */
@@ -114,7 +115,7 @@ odbc load,
 				SELECT
 					substring("sale derived recording date", 1, 4) as year,
 					substring("sale derived recording date", 5, 2) as month,
-					"deed situs zip code - static" as zip,
+					substring("deed situs zip code - static",1,5) as zip,
 				ROW_NUMBER() OVER
 					(	PARTITION BY /* variables selected for drop duplicates */
 							"fips code",
@@ -128,19 +129,20 @@ odbc load,
 					("primary category code" in ('A'))
 					AND ("property indicator code - static" in `deed_proptype_selections')
 					AND ("sale amount" > 0)
+					AND LEN("deed situs zip code - static") > 4
 			),
 			
 			deed AS (
 				SELECT zip, year, month, count(*) as sales
 				FROM raw_deed
 				WHERE (rownum = 1)
+				GROUP BY zip, year, month
 			)
 			
 			SELECT *
 			FROM mls
 			FULL JOIN deed
 				USING (zip, year, month)
-			GROUP BY zip, year, month
 			ORDER BY zip, year, month
 
 	"');
