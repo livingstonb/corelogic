@@ -91,7 +91,7 @@ odbc load,
 						cmas_parcel_id as apn,
 						cmas_parcel_seq_nbr as apn_seq,
 						substring(trim(fa_listdate), 1, 4) as year,
-						cast(substring(fa_listdate, 6, 2) as varchar) as month
+						cast(substring(fa_listdate, 6, 2) as varchar) as month,
 						fa_listdate as list_date,
 						cmas_zip5 as zip
 					FROM "corelogic-mls".quicksearch
@@ -107,41 +107,39 @@ odbc load,
 				SELECT zip, year, month, count(*) as listings
 				FROM raw_mls
 				WHERE (rownum = 1) /* drops duplicates */
-				GROUP BY zip, year, month
-			)
+			),
 			
 			/* DEED TABLES */
+			raw_deed AS (
+				SELECT
+					substring("sale derived recording date", 1, 4) as year,
+					substring("sale derived recording date", 5, 2) as month,
+					"deed situs zip code - static" as zip,
+				ROW_NUMBER() OVER
+					(	PARTITION BY /* variables selected for drop duplicates */
+							"fips code",
+							"apn (parcel number unformatted)",
+							"apn sequence number",
+							"sale derived recording date"
+					) as rownum
+				FROM
+					corelogic2.ownertransfer
+				WHERE 
+					("primary category code" in ('A'))
+					AND ("property indicator code - static" in `deed_proptype_selections')
+					AND ("sale amount" > 0)
+			),
+			
 			deed AS (
 				SELECT zip, year, month, count(*) as sales
-				FROM
-					(SELECT
-						substring("sale derived recording date", 1, 4) as year,
-						substring("sale derived recording date", 5, 2) as month,
-						"deed situs zip code - static" as zip,
-					ROW_NUMBER() OVER
-						(	PARTITION BY /* variables selected for drop duplicates */
-								"fips code",
-								"apn (parcel number unformatted)",
-								"apn sequence number",
-								"sale derived recording date"
-						) as rownum
-					FROM
-						corelogic2.ownertransfer
-					WHERE 
-						("primary category code" in ('A'))
-						AND ("property indicator code - static" in `deed_proptype_selections')
-						AND ("sale amount" > 0)
-					)
+				FROM raw_deed
 				WHERE (rownum = 1)
-				GROUP BY zip, year, month
-			),
+			)
 			
 			SELECT *
 			FROM mls
-			OUTER JOIN deed
-			ON (mls.zip = deed.zip)
-				AND (mls.year = deed.year)
-				AND (mls.month = deed.month)
+			FULL JOIN deed
+				USING (zip, year, month)
 			GROUP BY zip, year, month
 			ORDER BY zip, year, month
 
