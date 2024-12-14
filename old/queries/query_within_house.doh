@@ -1,7 +1,7 @@
 
 #delimit ;
 
-/* Query */
+/* Queries deed data within a YYYYMMDD date range */
 cap odbc load,
 		dsn("SimbaAthena")
 		exec(`"

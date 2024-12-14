@@ -1,3 +1,9 @@
+/*
+	Old code that calls query_within_house.doh or query_baseline.doh
+*/
+
+
+
 clear
 
 // global project "/Users/brianlivingston/Dropbox/NU/Spring 2024/RA/corelogic"

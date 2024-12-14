@@ -74,37 +74,6 @@ odbc load,
 		exec(`"
 		
 		WITH
-			
-			/* TAX TABLES
-			raw_tax AS (
-				SELECT
-					/* tsep is _ in 2018q4, otherwise is space */
-					"fips`tsep'code" as fips,
-					"apn`tsep'unformatted" as apn,
-					"apn`tsep'sequence`tsep'number" as apn_seq,
-					"property`tsep'zipcode" as zip,
-					"land`tsep'square`tsep'footage" as land_footage,
-					"total`tsep'baths`tsep'calculated" as nbaths,
-					"bedrooms",
-					ROW_NUMBER() OVER
-						(	PARTITION BY /* variables selected for drop duplicates */
-								"fips`tsep'code",
-								"apn`tsep'unformatted",
-								"apn`tsep'sequence`tsep'number"
-							ORDER BY /* cdetermines how to select among duplicates */
-								"land`tsep'square`tsep'footage" DESC
-						) as rownum
-				FROM corelogic.`tax_table'
-				WHERE
-					("fips`tsep'code" = '${chosen_fips}')
-			),
-			
-			tax AS (
-				SELECT *
-				FROM raw_tax
-				WHERE (rownum = 1) /* drops duplicates */
-			), */
-			
 			/* LISTINGS TABLES */
 			raw_mls AS (
 				SELECT *,
@@ -114,8 +83,6 @@ odbc load,
 								apn,
 								apn_seq,
 								list_date
-							ORDER BY /* determines how to select among duplicates */
-								listing_id DESC
 						) as rownum
 				FROM (
 					(SELECT
@@ -134,7 +101,7 @@ odbc load,
 						AND (fa_rent_sale_ind='S')
 						AND (fa_listdate != '')
 					)
-				`UNION_MLS_SUBQUERIES' )
+				`UNION_MLS_SUBQUERIES' ) 
 			),
 			
 			mls AS (
@@ -200,41 +167,10 @@ odbc load,
 				    recording_date, land_use_code, sale_amount
 				FROM deed
 			),
-
-		/* merge (listings + deed) with tax tables
-		SELECT 	d.fips,
-				d.apn,
-				d.apn_seq,
-				d.year,
-				d.month,
-				d.day,
-				d.entry,
-				d.sale_amount,
-				d.mls_proptype,
-				d.mls_service_name,
-				d.mls_service_code,
-				t.zip,
-				t.nbaths,
-				t.bedrooms,
-				t.land_footage
-		FROM data as d
-		LEFT JOIN tax as t
-			ON
-				(d.fips = t.fips)
-				AND (d.apn = t.apn)
-				AND (cast(d.apn_seq as int) = cast(t.apn_seq as int))
-		ORDER BY
-			d.fips,
-			d.apn,
-			d.apn_seq,
-			d.list_date
-			*/
-		
-		/* adjust for new listing */
 		
 		new_listings AS (
 			SELECT *,
-				MAKE_DATE(year, month, day) as constructed_date,
+				CONCAT(year, month, day) as constructed_date,
 				LAG(entry) OVER (
 					PARTITION BY
 						fips, apn, apn_seq
@@ -266,7 +202,7 @@ odbc load,
 					WHEN prev_entry = 'listing' THEN 1
 					ELSE 0
 				END AS prev_mls,
-				-- Create 'newlisting' as 1 for the first row in the group
+				/* Create 'newlisting' as 1 for the first row in the group */
 				CASE 
 				WHEN row_num = 1 THEN 1
 					ELSE 0
@@ -301,7 +237,7 @@ odbc load,
 			year,
 			month,
 			count(*) as listings
-		FROM 
+		FROM newlistings
 		WHERE newlisting = 1
 		GROUP BY zip, year, month
 	"');

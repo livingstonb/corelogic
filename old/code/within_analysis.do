@@ -1,3 +1,8 @@
+/*
+	Compute relative price changes and plot against time since sale as
+	new construction.
+*/
+
 
 cap rename (var12 var14) (owner_buyer_1_frst_name owner_buyer_2_frst_name)
 

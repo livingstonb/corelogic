@@ -9,11 +9,14 @@ global outdir "${project}/output-mls"
 global datadir "${project}/data"
 
 #delimit ;
+
+set odbcmgr unixodbc;
+
 local fips 06067;
 
 /* Loop over all quarters */
 local query;
-forvalues yy = 2015/2024 {;
+forvalues yy = 2015/2022 {;
 forvalues qq = 1/4 {;	
 
 	/* Spaces in variables names are underscores in 2018q4 tax tables */
@@ -28,7 +31,7 @@ forvalues qq = 1/4 {;
 	if (`yy' == 2015) & (`qq' == 1) {;
 		continue;
 	};
-	else if (`yy' == 2024) & (`qq' >= 3) {;
+	else if (`yy' == 2022) & (`qq' >= 3) {;
 		continue, break;
 	};
 	
@@ -42,12 +45,12 @@ forvalues qq = 1/4 {;
 			"sale`tsep'amount" as sale_amount
 		FROM corelogic.tax_`yy'_q`qq'
 		WHERE
-			fips in ('`fips'')
+			"fips`tsep'code" in ('`fips'')
 			AND ("sale`tsep'amount" > 0)
 			AND ("property`tsep'indicator`tsep'code" in ('10', '11', '20', '22', '21'))
 	);
 	
-	if (`yy' == 2024) & (`qq' >= 2) {;
+	if (`yy' == 2022) & (`qq' >= 2) {;
 		continue, break;
 	};
 	else {;
@@ -64,22 +67,22 @@ odbc load,
 				SELECT *,
 					ROW_NUMBER() OVER
 						(	PARTITION BY /* variables selected for drop duplicates */
-								"fips`tsep'code",
-								"apn`tsep'unformatted",
-								"apn`tsep'sequence`tsep'number",
-								"recording`tsep'date"
+								fips,
+								apn,
+								apn_seq
+								sale_date
 							ORDER BY /* determines how to select among duplicates */
-								"sale`tsep'amount" DESC
+								sale_amount DESC
 						) as rownum
 					FROM (`query')
 				)
 				
 	SELECT
 		COUNT(*) as sales,
-		substring("recording`tsep'date", 1, 4) as year
+		substring(cast(sale_date as varchar), 1, 4) as year
 	FROM raw
 	WHERE (rownum = 1)
-	GROUP BY substring("recording`tsep'date", 1, 4)
+	GROUP BY substring(cast(sale_date as varchar), 1, 4)
 			"');
 			
 save "${tempdir}/total_sales_from_assessor_data.dta", replace;

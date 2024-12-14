@@ -1,5 +1,10 @@
 args selected_query tfirst tlast
 
+/*
+	This file is called from main.do. Sets some local variables and 'includes'
+	the selected doh query.
+*/
+
 * Load packages
 set odbcmgr unixodbc
 

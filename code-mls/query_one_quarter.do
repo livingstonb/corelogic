@@ -49,7 +49,8 @@ local deed_proptype_selections ('10', '11', '20', '22', '21');
 local suffixes 20190701 20191001 20200101 20200401 20200701 20201001
 	20210101 20210401 20210701 20211001 20220101;
 		
-/* Query itself */
+/* Query itself
+ */
 include "${codedir}/sql_query.doh";
 
 if (_N == 0) {;

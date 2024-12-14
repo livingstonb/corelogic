@@ -1,3 +1,9 @@
+/*
+	Called after main, appends each quarter of data into one dataset
+*/
+
+
+
 args tfirst tlast
 
 if "`tfirst'" == "" {

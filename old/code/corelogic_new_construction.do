@@ -1,3 +1,7 @@
+/*
+	Called from main, after query. This code identifies sales associated with
+	new constructions.
+*/
 
 #delimit ;
 

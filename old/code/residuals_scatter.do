@@ -1,3 +1,12 @@
+/*
+	This code originally written by Charles Nathanson and sent in an email
+	to Brian on 7/24/24. Modified to export the time series.
+	
+	The input data comes from code which used the query_within_house.doh
+	query.
+*/
+
+
 #d;
 
 /*read merged file*/
