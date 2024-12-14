@@ -168,9 +168,9 @@ odbc load,
 				FROM deed
 			),
 		
-		new_listings AS (
+		data_refined AS (
 			SELECT *,
-				CONCAT(year, month, day) as constructed_date,
+				cast(CONCAT(year, month, day) as bigint) as constructed_date,
 				LAG(entry) OVER (
 					PARTITION BY
 						fips, apn, apn_seq
@@ -207,11 +207,13 @@ odbc load,
 				WHEN row_num = 1 THEN 1
 					ELSE 0
 				END AS newlisting
-			FROM new_listings
+			FROM data_refined
 		),
 		
-		pre_newlistings AS (
-			SELECT *,
+		with_newlistings AS (
+			SELECT fips, apn, apn_seq, year, month, day, entry,
+					list_date, mls_proptype, recording_date, land_use_code, sale_amount,
+					constructed_date, prev_entry, prev_date, prev_mls,
 				CASE
 					WHEN (entry = 'listing' AND prev_deed = 1)
 						OR (entry = 'sale' AND prev_deed = 1)
@@ -221,8 +223,10 @@ odbc load,
 			FROM final_data
 		),
 		
-		newlistings AS (
-			SELECT *,
+		revised_newlisting AS (
+			SELECT fips, apn, apn_seq, year, month, day, entry,
+					list_date, mls_proptype, recording_date, land_use_code, sale_amount,
+					constructed_date, prev_entry, prev_date, prev_mls,
 				CASE
 					WHEN (constructed_date - prev_date > ${new_listing_cutoff})
 						AND (entry = 'listing') AND (prev_mls = 1)
