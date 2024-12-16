@@ -1,11 +1,12 @@
 
-#delimit ;
 
 /*
 	Date variable is formatted differently in quicksearch_* tables
 than in quicksearch, so have to query these differently. Do this by taking UNION
 of these subqueries (local created here) and later UNION this with quicksearch.
 */
+#delimit ;
+
 local UNION_MLS_SUBQUERIES;
 foreach suffix of local suffixes {;
 	local UNION_MLS_SUBQUERIES `UNION_MLS_SUBQUERIES'

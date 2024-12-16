@@ -1,4 +1,11 @@
 
+/* Directories */
+global project "~/Dropbox/NU/Spring 2024/RA/corelogic"
+global codedir "${project}/code"
+global tempdir "${project}/temp"
+global outdir "${project}/output"
+global datadir "${project}/data"
+
 /* Crosswalk */
 #delimit ;
 import excel "${datadir}/ZIP_CBSA_032020.xlsx", clear firstrow;
@@ -21,10 +28,12 @@ save "`msa_list_paper'", replace;
 
 clear;
 
-local types deed listing;
+local types sales listing;
 foreach type of local types {;
 	use "${outdir}/`type'_counts.dta", clear;
 	merge m:1 zip using "`zip_cbsa_cwalk'", nogen keep(3);
+	gen year = substr(date, 1, 4);
+	destring year, force replace;
 
 	collapse (sum) `type', by(cbsa year);
 	save "${tempdir}/cbsa_`type'_counts.dta", replace;

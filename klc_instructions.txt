@@ -1,0 +1,19 @@
+
+
+### Web console is here:
+https://www.it.northwestern.edu/support/login/aws.html
+
+### KLC website says may need to do this occasionally if can't ssh
+rm ~/.ssh/known_hosts
+
+### SSH
+ssh <netid>@klc0201.ci.northwestern.edu
+
+### In KLC, enter these lines before running Stata
+module load awscli/2
+export ODBCSYSINI=/kellogg/software/.odbc/corelogic
+export ODBCINI=/kellogg/software/.odbc/corelogic
+module load stata/17
+
+### AWS credentials file
+Write/create file "~/.aws/credentials" as credentials Option 2 text from web console

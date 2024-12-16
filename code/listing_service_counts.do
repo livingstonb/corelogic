@@ -1,3 +1,6 @@
+/*
+	Constructs table of listing counts at the zip-month-service level.
+*/
 
 /* Directories */
 global project "~/charlie-project/corelogic"
@@ -13,7 +16,7 @@ cap mkdir "$outdir"
 /* For query */
 set odbcmgr unixodbc
 
-/* Prepare USPS crosswalk for zip-CBSA */
+/* Prepare HUD-USPS crosswalk for zip-CBSA */
 #delimit ;
 import excel "${datadir}/ZIP_CBSA_032020.xlsx", clear firstrow;
 keep if TOT_RATIO > 0.9;
@@ -23,8 +26,6 @@ rename CBSA msa;
 
 tempfile zip_cbsa_cwalk;
 save "`zip_cbsa_cwalk'", replace;
-
-/* LISTINGS QUERY */
 
 /*
 	Local to construct string that will union over different quicksearch
@@ -78,7 +79,7 @@ odbc load,
 			count(*) as listings
 		FROM /* Union of quicksearch* tables */
 			(
-				(SELECT DISTINCT
+				(SELECT DISTINCT /* Drop duplicates along all variables below */
 					cast(substring("fa_listdate",6,2) as varchar) as month,
 					"cmas_zip5",
 					"cmas_fips_code",
@@ -91,7 +92,7 @@ odbc load,
 					("fa_propertytype" in ('SF', 'CN', 'TH', 'RI', 'MF', 'AP'))
 					AND ("fa_rent_sale_ind"='S')
 					AND ("fa_listdate" != '')
-				)
+				) /* Now union with quicksearch_******** tables */
 				`union_subqueries'
 			)
 		GROUP BY "cmas_zip5", listingservicename, year, month

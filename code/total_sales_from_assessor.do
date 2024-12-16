@@ -1,5 +1,8 @@
 
-
+/*
+	Estimates total home sales per quarter using the assessor data on past sales
+	and then dropping duplicates.
+*/ 
 global project "/Users/brianlivingston/Dropbox/NU/Spring 2024/RA/corelogic"
 
 // global project "~/charlie-project/corelogic"
@@ -14,7 +17,10 @@ set odbcmgr unixodbc;
 
 local fips 06067;
 
-/* Loop over all quarters */
+/*
+	Loop over all quarters to construct subquery, stored in the local variable
+	'query'.
+*/
 local query;
 forvalues yy = 2015/2022 {;
 forvalues qq = 1/4 {;	
@@ -60,6 +66,7 @@ forvalues qq = 1/4 {;
 };
 };
 
+/* Query */
 odbc load,
 		dsn("SimbaAthena")
 		exec(`"
@@ -77,12 +84,15 @@ odbc load,
 					FROM (`query')
 				)
 				
-	SELECT
-		COUNT(*) as sales,
-		substring(cast(sale_date as varchar), 1, 4) as year
-	FROM raw
-	WHERE (rownum = 1)
-	GROUP BY substring(cast(sale_date as varchar), 1, 4)
+			SELECT
+				COUNT(*) as sales,
+				substring(cast(sale_date as varchar), 1, 4) as year
+			FROM raw
+			WHERE (rownum = 1)
+			GROUP BY substring(cast(sale_date as varchar), 1, 4)
 			"');
-			
+
+/* Save */
+destring sales year, replace;
+sort year;
 save "${tempdir}/total_sales_from_assessor_data.dta", replace;

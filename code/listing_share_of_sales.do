@@ -1,3 +1,9 @@
+/*
+	Attempt at computing listings in year t divided by total sales in year
+	t - k.
+	Output "${tempdir}/nsales_for_listing_share_of_sales.dta" is current progress
+	of this code
+*/
 
 
 #delimit ;

@@ -1,3 +1,6 @@
+/*
+	Constructs table of listing and sales counts at the zip-month level.
+*/
 
 /* Directories */
 global project "~/charlie-project/corelogic"
@@ -148,7 +151,7 @@ odbc load,
 
 	"');
 
-
+/* Clean and save */
 keep if strlen(strtrim(zip)) == 5;
 drop if strpos(zip, "#") > 0;
 drop if strpos(zip, "@") > 0;
