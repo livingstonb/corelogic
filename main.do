@@ -31,7 +31,7 @@ local suffixes 20190701 20191001 20200101 20200401 20200701 20201001
 
 /* Save empty file, append quarter-by-quarter */
 clear
-local filename "${tempdir}/data_final_${chosen_fips}.dta"
+local filename "${outdir}/data_final_${chosen_fips}.dta"
 save "`filename'", replace emptyok
 
 /* Main queries, loop over quarters */

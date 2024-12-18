@@ -95,4 +95,4 @@ odbc load,
 /* Save */
 destring sales year, replace;
 sort year;
-save "${tempdir}/total_sales_from_assessor_data.dta", replace;
+save "${outdir}/total_sales_from_assessor_data.dta", replace;

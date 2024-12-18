@@ -18,8 +18,8 @@ cd "$project"
 cap mkdir "$tempdir"
 cap mkdir "$outdir"
 
-/* File from location_time_counts.do, rename as needed. */
-use "${outdir}/monthly_counts_zip_11_26.dta", clear
+/* File from sales_listing_counts.do, rename as needed. */
+use "${outdir}/sales_listing_counts.dta", clear
 
 /* Clean and smooth listings/sales */
 drop date
@@ -117,7 +117,7 @@ foreach zip of local zips {;
 		putpdf text ("Page `pagenum'"), bold;
 		local pagenum = `pagenum' + 1;
 		if `pagenum' == 15 {;
-			putpdf save "${tempdir}/start_date_figs.pdf", replace;
+			putpdf save "${outdir}/start_date_figs.pdf", replace;
 			putpdf clear;
 			continue, break;
 		};

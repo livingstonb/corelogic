@@ -47,9 +47,6 @@ foreach suffix of local suffixes {;
 		AND (fa_listdate != '')
 		);
 };
-/*
-- First set up subquery 'tax'
-*/
 
 /* Query */
 odbc load,

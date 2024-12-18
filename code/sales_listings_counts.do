@@ -167,6 +167,6 @@ format %tm mdate;
 drop if year <= 1950;
 drop if year > 2025;
 
-save "${tempdir}/location_time_counts_new.dta", replace;
+save "${outdir}/sales_listing_counts.dta", replace;
 	
 	
